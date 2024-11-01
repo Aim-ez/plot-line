@@ -5,7 +5,6 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -14,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.aimez.plotline"
+      "bundleIdentifier": "com.aimez.plotline",
     },
     "android": {
       "adaptiveIcon": {
@@ -28,6 +27,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "scheme": "myGoogleApp",
     "plugins": [
       "expo-router"
     ],
