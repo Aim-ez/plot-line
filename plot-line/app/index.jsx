@@ -7,6 +7,7 @@ import React from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { Link } from 'expo-router'
 
+import Glogo from '../assets/images/g.png'
 import * as WebBrowser from "expo-web-browser"
 import * as Google from 'expo-auth-session/providers/google'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -21,7 +22,7 @@ export default function App() {
     iosClientId:
       "234979308654-mht7ls7hg3d57nl0gc80hfos3b0gepv2.apps.googleusercontent.com",
     androidClientId: 
-      "234979308654-6ih1qglvuleft7trchpa64n4jtls7e5c.apps.googleusercontent.com",
+      "234979308654-6ih1qglvuleft7trchpa64n4jtls7e5c.apps.googleusercontent.com"
   })
 
   const handlesPress = async () => {
@@ -49,7 +50,7 @@ export default function App() {
     }
   }
 
-  const getUserInfo = async(token: any) => {
+  const getUserInfo = async(token) => {
     if (!token) return;
     try {
       const response = await fetch(
@@ -71,9 +72,13 @@ export default function App() {
     <View style={styles.container}>
       <Text>Welcome to PlotLine!</Text>
       <Text>{JSON.stringify(userInfo, null, 2)}</Text>
-      <Pressable style={styles.button} onPress={() => promptAsync()}>
-        <Text style={styles.text}>{"Sign in with Google"}</Text>
-      </Pressable>
+      <div id="gSignInWrapper">
+        <Pressable style={styles.googleButton} onPress={() => promptAsync()}>
+            <img style={styles.img}src="../assets/images/g.png"/>
+            <Text style={styles.text}>{"Sign in with Google"}</Text>
+         </Pressable>
+      </div>
+      
       <Pressable style={styles.button} onPress={() => AsyncStorage.removeItem("@user")}>
         <Text style={styles.text}>{"Delete local storage"}</Text>
       </Pressable>
@@ -89,12 +94,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-  justifyContent: 'center',
+    justifyContent: 'center',
   },
 
   text: {
     color: '#fff',
     fontSize: 18,
+  },
+
+  div: {
+    display: 'flex',
+    alignItems: 'flex-start',
+  },
+
+  googleButton: {
+    backgroundColor: '#000',
+    padding: 10,
+    borderRadius: 5, 
+    margin: 20,
+    display: 'flex',
+    flexDirection: 'row'
+  },
+  img: {
+    width: 35,
+    height: 20,
+    paddingRight: 10,
   },
 
   button: {

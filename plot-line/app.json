@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.aimez.plotline",
+      "bundleIdentifier": "com.aimez.plotline"
     },
     "android": {
       "adaptiveIcon": {
