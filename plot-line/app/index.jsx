@@ -2,16 +2,19 @@
 // iOS 234979308654-mht7ls7hg3d57nl0gc80hfos3b0gepv2.apps.googleusercontent.com
 // and 234979308654-6ih1qglvuleft7trchpa64n4jtls7e5c.apps.googleusercontent.com
 
-import { Button, Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
-import { StatusBar } from 'expo-status-bar'
 import { Link } from 'expo-router'
+
+// React navigation stack
+import RootStack from '../navigators/RootStack'
 
 import Glogo from '../assets/images/g.png'
 import * as WebBrowser from "expo-web-browser"
 import * as Google from 'expo-auth-session/providers/google'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+
+//Google sign-in
 WebBrowser.maybeCompleteAuthSession();
 
 export default function App() {
@@ -24,10 +27,6 @@ export default function App() {
     androidClientId: 
       "234979308654-6ih1qglvuleft7trchpa64n4jtls7e5c.apps.googleusercontent.com"
   })
-
-  const handlesPress = async () => {
-    await promptAsync();
-  }
 
   React.useEffect(() => {
     handleGoogleSignIn();
@@ -68,26 +67,10 @@ export default function App() {
     }
   }
 
-  return (
-    <View style={styles.container}>
-      <Text>Welcome to PlotLine!</Text>
-      <Text>{JSON.stringify(userInfo, null, 2)}</Text>
-      <div id="gSignInWrapper">
-        <Pressable style={styles.googleButton} onPress={() => promptAsync()}>
-            <img style={styles.img}src="../assets/images/g.png"/>
-            <Text style={styles.text}>{"Sign in with Google"}</Text>
-         </Pressable>
-      </div>
-      
-      <Pressable style={styles.button} onPress={() => AsyncStorage.removeItem("@user")}>
-        <Text style={styles.text}>{"Delete local storage"}</Text>
-      </Pressable>
-      <StatusBar style="auto"/>
-      <Link href="/home" style={{color: 'blue'}}>Go to Tabs</Link>
-    </View>
-  );
+  return (<RootStack/>);
 }
 
+/*
 const styles = StyleSheet.create({
   container: {
     display: 'flex',
@@ -128,3 +111,4 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   }
 });
+*/
