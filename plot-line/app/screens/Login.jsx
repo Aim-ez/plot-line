@@ -45,7 +45,7 @@ import {
 const {brand, darkLight, primary} = Colors;
 
 const Login = ({navigation}) => {
-    const url = "http://192.168.100.210:3000/user/login" // CHANGE IF IP ADDRESS CHANGES
+    const url = "http://172.30.128.198:3000/user/login" // CHANGE IF IP ADDRESS CHANGES
 
     const [hidePassword, setHidePassword] = useState(true);
     const [message, setMessage] = useState();

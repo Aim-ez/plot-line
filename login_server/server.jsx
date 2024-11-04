@@ -6,7 +6,7 @@ const port = 3000;
 
 const cors = require('cors');
 const corsOptions = {
-    origin: ['http://192.168.100.210:3000', 'https://i3o4d8s-aim-ez-8081.exp.direct'],
+    origin: ['http://172.30.128.198:3000', 'https://i3o4d8s-aim-ez-8081.exp.direct'],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
 }

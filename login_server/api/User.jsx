@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-// mongoDB user model
+// mongoDB models
 const User = require('./../models/User.jsx');
+const ReadingList = require('./../models/ReadingList.jsx');
 
 // Password handler
 const bcrypt = require('bcrypt');
@@ -75,6 +76,22 @@ router.post('/signup', (req, res) => {
                                 password: hashedPassword,
                             });
 
+                            const newReadingList = new ReadingList({
+                                userId: newUser._id,
+                                books: [],
+                            });
+
+
+                            newReadingList.save().then(() =>{
+                                console.log("READING LIST CREATED SUCCESFULLY")
+                            }).catch(err => {
+                                console.log(err);
+                                res.json({
+                                    status: "FAILED", 
+                                    message: "An error occured while saving readinglist!"
+                                })
+                            });
+
                             newUser.save().then(result => {
                                 res.json({
                                     status: "SUCCESS",
@@ -88,6 +105,8 @@ router.post('/signup', (req, res) => {
                                     message: "An error occured while saving user account!"
                                 })
                             })
+
+                            
                         }).catch(err => {
                             console.log(err);
                             res.json({
