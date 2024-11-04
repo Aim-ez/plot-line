@@ -17,19 +17,34 @@
 import { StyleSheet, Text, TextInput, View, FlatList, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 
-interface Book {
-  id: string
+import {
+  StyledContainer,
+  InnerContainer,
+  PageLogo,
+  PageTitle,
+  SubTitle,
+  StyledFormArea,
+  StyledButton,
+  ButtonText,
+  Line,
+  WelcomeContainer,
+  Avatar,
+  SearchBar,
+} from '../../components/styles';
+
+const Book = ({ 
+  id: '',
   volumeInfo: {
-    title: string
-    authors?: string[]
-  }
-}
+    title: '',
+    authors: [],
+  },
+});
 
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes'
 
 const Search = () => {
-  const [query, setQuery] = useState<string>('')
-  const [books, setBooks] = useState<Book[]>([])
+  const [query, setQuery] = useState('')
+  const [books, setBooks] = useState([])
 
   const fetchBooks = async () => {
     try {
@@ -41,7 +56,7 @@ const Search = () => {
     }
   }
 
-  const renderBookItem = ({ item }: { item: Book }) => (
+  const renderBookItem = ({item}) => (
     <TouchableOpacity style={styles.bookItem}>
       <Text style={styles.bookTitle}>{item.volumeInfo.title}</Text>
       <Text style={styles.bookAuthor}>{item.volumeInfo.authors?.join(', ')}</Text>
@@ -50,9 +65,8 @@ const Search = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>Plotline</Text>
-      <TextInput
-        style={styles.input}
+      <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
+      <SearchBar
         placeholder="Search for books..."
         value={query}
         onChangeText={setQuery}

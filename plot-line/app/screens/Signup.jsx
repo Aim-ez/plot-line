@@ -5,6 +5,9 @@ import { StatusBar } from 'expo-status-bar'
 import { Formik } from 'formik';
 import { View, ScrollView } from 'react-native';
 
+// API client
+import axios from 'axios';
+
 // icons
 import { Octicons, Ionicons } from '@expo/vector-icons';
 
@@ -36,7 +39,41 @@ import {
 const {brand, darkLight, primary} = Colors;
 
 const Signup = ({navigation}) => {
+    const url = "http://192.168.100.210:3000/user/signup" // CHANGE IF IP ADDRESS CHANGES
+
     const [hidePassword, setHidePassword] = useState(true);
+    const [message, setMessage] = useState();
+    const [messageType, setMessageType] = useState();
+    const [submitting, setSubmitting] = useState();
+
+    const handleSignup = (credentials) => {
+        handleMessage(null); // Reset error message
+        
+        axios.post(url, credentials)
+        .then((response) => {
+            const result = response.data;
+            const {message, status, data} = result;
+
+            if (status !== 'SUCCESS') {
+                handleMessage(message, status);
+            } else {
+                console.log("SIGNUP SUCESSFUL")
+                navigation.navigate('TabLayout', {...data});
+            }
+            setSubmitting(false);
+        })
+        .catch(error => {
+            console.log(error);
+            setSubmitting(false);
+            handleMessage("An error occurred. check your network and try again.");
+        })
+    }
+
+    const handleMessage = (message, type = 'FAILED') => {
+        setMessage(message);
+        setMessageType(type);
+    }
+
 
     return (
         <KeyboardAvoidingWrapper>
@@ -48,10 +85,24 @@ const Signup = ({navigation}) => {
                         <PageTitle>Sign Up</PageTitle>
                         <SubTitle>Create Your Account</SubTitle>
                         <Formik
-                            initialValues={{fullName: '', userName: '', dateOfBirth: '', confirmPassword: '', email: '', password: ''}}
+                            initialValues={{name: '', username: '', confirmPassword: '', email: '', password: ''}}
                             onSubmit={(values) => {
-                                console.log(values);
-                                navigation.navigate("TabLayout");
+                                if (
+                                    values.email == '' || 
+                                    values.password == '' || 
+                                    values.username== '' || 
+                                    values.confirmPassword == '' || 
+                                    values.name == ''
+                                ) {
+                                    handleMessage('Please fill in all the fields');
+                                    setSubmitting(false);
+                                } else if (values.password !== values.confirmPassword) {
+                                    handleMessage('Passwords do not match.');
+                                    setSubmitting(false);
+                                } else {
+                                    setSubmitting(true);
+                                    handleSignup(values);
+                                }
                             }}
                         >{({handleChange, handleBlur, handleSubmit, values}) => (<StyledFormArea>
                             <MyTextInput 
@@ -59,18 +110,18 @@ const Signup = ({navigation}) => {
                                 icon="person"
                                 placeholder="John Doe"
                                 placeholderTextColor={darkLight}
-                                onChangeText={handleChange('fullName')}
-                                onBlur={handleBlur('fullName')}
-                                value={values.fullName}
+                                onChangeText={handleChange('name')}
+                                onBlur={handleBlur('name')}
+                                value={values.name}
                             />
                             <MyTextInput 
                                 label="Username"
                                 icon="mention"
                                 placeholder="johndoe"
                                 placeholderTextColor={darkLight}
-                                onChangeText={handleChange('userName')}
-                                onBlur={handleBlur('userName')}
-                                value={values.userName}
+                                onChangeText={handleChange('username')}
+                                onBlur={handleBlur('username')}
+                                value={values.username}
                             />
                             <MyTextInput 
                                 label="Email Address"
@@ -108,10 +159,17 @@ const Signup = ({navigation}) => {
                                 hidePassword={hidePassword}
                                 setHidePassword={setHidePassword}
                             />
-                            <MsgBox>...</MsgBox>
-                            <StyledButton onPress={handleSubmit}>
-                                <ButtonText>Sign Up</ButtonText>
-                            </StyledButton>
+                            <MsgBox type={messageType}>{message}</MsgBox>
+                            {!submitting && (
+                                <StyledButton onPress={handleSubmit}>
+                                    <ButtonText>Sign Up</ButtonText>
+                                </StyledButton>
+                            )}
+                            {submitting && (
+                                <StyledButton disabled={true}>
+                                     <Ionicons name={'ellipse-outline'} size={30} color={primary}/>
+                                </StyledButton>
+                            )}
                             <Line />
 
                             <ExtraView>

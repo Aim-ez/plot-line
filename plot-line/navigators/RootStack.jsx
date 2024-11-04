@@ -10,9 +10,6 @@ import Signup from '../app/screens/Signup';
 import Welcome from '../app/screens/Welcome';
 import TabLayout from '../app/(tabs)/_layout';
 
-import { Colors } from '../components/styles'
-const {tertiary} = Colors;
-
 const Stack = createStackNavigator();
 
 const RootStack = () => {

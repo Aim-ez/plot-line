@@ -52,6 +52,13 @@ export const PageLogo = styled.Image`
     width: 250px;
     height: 130px;
     resize-mode: contain;
+
+
+    ${(props) => props.search && `
+        width: 200px;
+        height: 100px;
+        resize-mode: contain;
+    `}
 `;
 
 export const Avatar = styled.Image`
@@ -78,19 +85,25 @@ export const PageTitle = styled.Text`
 
 export const SubTitle = styled.Text`
     font-size: 18px;
-    margin=bottom: 20px;
+    margin-bottom: 20px;
     letter-spacing: 1px;
     font-weight: bold;
-    color: ${tertiary}
+    color: ${tertiary};
 
     ${(props) => props.welcome && `
         margin-bottom: 5px;
         font-weight: normal;
     `}
+
+
+    ${(props) => props.profile && `
+        margin-bottom: 10px;
+        font-weight: normal;
+    `}
 `;
 
 export const StyledFormArea = styled.View`
-    width: 90%
+    width: 90%;
 `;
 
 export const StyledTextInput = styled.TextInput`
@@ -157,6 +170,7 @@ export const ButtonText = styled.Text`
 export const MsgBox = styled.Text`
     text-align: center;
     font-size: 13px;
+    color: ${props => props.type == 'SUCCESS' ? green : red};
 `;
 
 export const Line = styled.View`
@@ -189,4 +203,15 @@ export const TextLinkContent = styled.Text`
         color: ${brand};
         font-size: 15px;
         padding-left: 20px;
+`;
+
+export const SearchBar = styled.TextInput`
+    height: 40px;
+    border-color: '#A574D5';
+    border-width: 1px;
+    width: '100%';
+    padding-horizontal: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: '#fff';
 `;

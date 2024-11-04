@@ -6,6 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
+    "packagerOpts": {
+      "sourceExts": ["js", "jsx", "ts", "tsx"]
+    },
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",

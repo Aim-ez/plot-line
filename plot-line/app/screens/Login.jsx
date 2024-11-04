@@ -13,6 +13,9 @@ import { Octicons, Ionicons, Fontisto } from '@expo/vector-icons';
 // keyboard avoid wrapper
 import KeyboardAvoidingWrapper from '../../components/KeyboardAvoidingWrapper';
 
+// API client
+import axios from 'axios';
+
 import {
     StyledContainer,
     InnerContainer,
@@ -38,7 +41,40 @@ import {
 const {brand, darkLight, primary} = Colors;
 
 const Login = ({navigation}) => {
+    const url = "http://192.168.100.210:3000/user/login" // CHANGE IF IP ADDRESS CHANGES
+
     const [hidePassword, setHidePassword] = useState(true);
+    const [message, setMessage] = useState();
+    const [messageType, setMessageType] = useState();
+    const [submitting, setSubmitting] = useState();
+
+    const handleLogin = (credentials) => {
+        handleMessage(null); // Reset error message
+        
+        axios.post(url, credentials)
+        .then((response) => {
+            const result = response.data;
+            const {message, status, data} = result;
+
+            if (status !== 'SUCCESS') {
+                handleMessage(message, status);
+            } else {
+                console.log("LOGIN SUCESSFUL")
+                navigation.navigate('TabLayout', {...data[0]});
+            }
+            setSubmitting(false);
+        })
+        .catch(error => {
+            console.log(error);
+            setSubmitting(false);
+            handleMessage("An error occurred. check your network and try again.");
+        })
+    }
+
+    const handleMessage = (message, type = 'FAILED') => {
+        setMessage(message);
+        setMessageType(type);
+    }
 
     return (
         <KeyboardAvoidingWrapper>
@@ -52,8 +88,13 @@ const Login = ({navigation}) => {
                         <Formik
                             initialValues={{email: '', password: ''}}
                             onSubmit={(values) => {
-                                console.log(values);
-                                navigation.navigate("TabLayout");
+                                if (values.email == '' || values.password == '') {
+                                    handleMessage('Please fill in all the fields');
+                                    setSubmitting(false);
+                                } else {
+                                    setSubmitting(true);
+                                    handleLogin(values);
+                                }
                             }}
                         >{({handleChange, handleBlur, handleSubmit, values}) => (<StyledFormArea>
                             <MyTextInput 
@@ -79,15 +120,18 @@ const Login = ({navigation}) => {
                                 hidePassword={hidePassword}
                                 setHidePassword={setHidePassword}
                             />
-                            <MsgBox>...</MsgBox>
-                            <StyledButton onPress={handleSubmit}>
-                                <ButtonText>Login</ButtonText>
-                            </StyledButton>
+                            <MsgBox type={messageType}>{message}</MsgBox>
+                            {!submitting && (
+                                <StyledButton onPress={handleSubmit}>
+                                    <ButtonText>Login</ButtonText>
+                                </StyledButton>
+                            )}
+                            {submitting && (
+                                <StyledButton disabled={true}>
+                                     <Ionicons name={'ellipse-outline'} size={30} color={primary}/>
+                                </StyledButton>
+                            )}
                             <Line />
-                            <StyledButton google={true} onPress={handleSubmit}>
-                                <Fontisto name="google" color={primary} size={22}/>
-                                <ButtonText google={true}>Sign in with Google</ButtonText>
-                            </StyledButton>
                             <ExtraView>
                             <ExtraText>Don't have an account already?</ExtraText> 
                             <TextLink onPress={() => navigation.navigate('Signup')}>
@@ -126,3 +170,11 @@ const MyTextInput = ({label, icon, isPassword, hidePassword, setHidePassword, ..
 }
 
 export default Login;
+
+
+/*
+                            <StyledButton google={true} onPress={handleSubmit}>
+                                <Fontisto name="google" color={primary} size={22}/>
+                                <ButtonText google={true}>Sign in with Google</ButtonText>
+                            </StyledButton>
+*/
