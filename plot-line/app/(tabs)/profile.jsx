@@ -40,11 +40,11 @@ const Profile = () => {
             <StyledContainer>
                 <StatusBar style="dark"/>
                     <InnerContainer>
-                        <PageTitle>Profile</PageTitle>
-                        <SubTitle>Current User</SubTitle>
+                        <PageTitle>Your Profile</PageTitle>
+                        <SubTitle>Information</SubTitle>
                         <InnerContainer>
                             <SubTitle profile={true}>{name || 'NAME SHOULD BE HERE'}</SubTitle>
-                            <SubTitle profile={true}>{username || 'USER NAME HERE'}</SubTitle>
+                            <SubTitle profile={true}>@{username || 'USER NAME HERE'}</SubTitle>
                             <SubTitle profile={true}>{email || 'EMAIL HERE'}</SubTitle>
                             <Line />
                             <StyledButton onPress={clearLogin}>
