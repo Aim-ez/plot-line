@@ -48,6 +48,7 @@ This should launch the mongodb database so that you're able to make calls to it.
 ## Run the Frontend Expo App
 npx expo start --tunnel
 
+npm rebuild bcrypt --build-from-source
 
 
 And you should be good to go!
