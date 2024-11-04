@@ -26,6 +26,13 @@ const corsOptions = {
 const url = "http://<COMPUTER_IP_ADDRESS>:3000/user/signup" // CHANGE IF IP ADDRESS CHANGES
 ...
 
+### Add your IP address to the Mongo database
+1) Login into MongoDB in the web (I will give you password)
+2) Click 'Browse Collections' in Cluster 0
+3) Go to 'Network Access'
+4) Click 'Add Current IP Address'
+5) Should be good to go!
+
 ### Firewall (Potentially)
 I believe that's the only things you'll have to change.
 
