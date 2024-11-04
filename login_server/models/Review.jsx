@@ -15,7 +15,7 @@ const ReviewSchema = new Schema({
     rating: Number,
     description: String,
     date: Date,
-})
+});
 
 const Review = mongoose.model('Review', ReviewSchema);
 

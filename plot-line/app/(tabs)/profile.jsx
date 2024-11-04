@@ -7,6 +7,12 @@ import AsyncStorage  from '@react-native-async-storage/async-storage'
 // credntials context
 import { CredentialsContext } from '../../components/CredentialsContext.jsx'
 
+// API client
+import axios from 'axios';
+
+// Host URL
+import { HostURL } from '../../constants/URL.ts'
+
 import {
     StyledContainer,
     InnerContainer,
@@ -18,14 +24,19 @@ import {
     ButtonText,
     Line,
     WelcomeContainer,
-    Avatar
+    Avatar,
+    ReviewBox
 } from '../../components/styles';
 import { ScrollView } from 'react-native';
 
 const Profile = () => {
+    const url = HostURL + "/profile";
+    console.log(url)
+
     //context -> will be important later
     const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
-    const { name, username, email } = storedCredentials;
+    const { name, username, email, _id } = storedCredentials;
+    let numReviews = 0;
 
     const clearLogin = () => {
         AsyncStorage.removeItem('plotlineCredentials')
@@ -35,12 +46,27 @@ const Profile = () => {
         .catch(error => console.log(error))
     }
 
+
+    const handleMessage = (message, type = 'FAILED') => {
+        console.log(type);
+        console.log(message);
+    }
+
     return (
         <ScrollView>
             <StyledContainer>
                 <StatusBar style="dark"/>
+                <PageTitle>Your Profile</PageTitle>
                     <InnerContainer>
-                        <PageTitle>Your Profile</PageTitle>
+                        <SubTitle>Your Reviews</SubTitle>
+                        <SubTitle profile={true}>You have a total of {numReviews} reviews!</SubTitle>
+                        <ReviewBox>
+                            <SubTitle>Test</SubTitle>
+                        </ReviewBox>
+                    </InnerContainer>
+
+
+                    <InnerContainer>
                         <SubTitle>Information</SubTitle>
                         <InnerContainer>
                             <SubTitle profile={true}>{name || 'NAME SHOULD BE HERE'}</SubTitle>

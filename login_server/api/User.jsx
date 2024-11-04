@@ -4,6 +4,9 @@ const router = express.Router();
 // mongoDB models
 const User = require('./../models/User.jsx');
 const ReadingList = require('./../models/ReadingList.jsx');
+const Review = require('./../models/Review.jsx');
+const Book = require('./../models/Book.jsx');
+
 
 // Password handler
 const bcrypt = require('bcrypt');
@@ -83,7 +86,7 @@ router.post('/signup', (req, res) => {
 
 
                             newReadingList.save().then(() =>{
-                                console.log("READING LIST CREATED SUCCESFULLY")
+                                console.log("READING LIST CREATED")
                             }).catch(err => {
                                 console.log(err);
                                 res.json({
@@ -93,6 +96,7 @@ router.post('/signup', (req, res) => {
                             });
 
                             newUser.save().then(result => {
+                                console.log("SIGNUP SUCCESSFUL")
                                 res.json({
                                     status: "SUCCESS",
                                     message: "Signup sucessful!",
@@ -165,6 +169,7 @@ router.post('/login', (req, res) => {
                         })
                     }
                 }).catch(err => {
+                    console.log(err)
                     res.json({
                         status: "FAILED",
                         message: "An error occured while comparing passwords."
@@ -177,6 +182,7 @@ router.post('/login', (req, res) => {
                 })
             }
         }).catch(err => {
+            console.log("Big test" + err)
             res.json({
                 status: "FAILED",
                 message: "An error occured while checking for existing user."
@@ -184,5 +190,8 @@ router.post('/login', (req, res) => {
         })
     }
 })
+
+
+ 
 
 module.exports = router;

@@ -206,12 +206,22 @@ export const TextLinkContent = styled.Text`
 `;
 
 export const SearchBar = styled.TextInput`
-    height: 40px;
-    border-color: '#A574D5';
-    border-width: 1px;
-    width: '100%';
-    padding-horizontal: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    background-color: '#fff';
+        height: 40px;
+        border-color: '#A574D5';
+        border-width: 1px;
+        width: '100%';
+        padding-horizontal: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        background-color: '#fff';
+`;
+
+export const ReviewBox = styled.View`
+        height: 100px;
+        border-color: ${brand};
+        border-width: 2px;
+        width: 100%;
+        padding: 10px;
+        margin: 5px;
+        background-color: '#111';
 `;
