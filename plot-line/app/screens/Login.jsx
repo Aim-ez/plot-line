@@ -20,6 +20,9 @@ import KeyboardAvoidingWrapper from '../../components/KeyboardAvoidingWrapper';
 // API client
 import axios from 'axios';
 
+// Host URL
+import { HostURL } from '../../constants/URL.ts'
+
 import {
     StyledContainer,
     InnerContainer,
@@ -45,7 +48,8 @@ import {
 const {brand, darkLight, primary} = Colors;
 
 const Login = ({navigation}) => {
-    const url = "http://172.30.128.25:3000/user/login" // CHANGE IF IP ADDRESS CHANGES
+    const url = HostURL + "/user/login"
+
 
     const [hidePassword, setHidePassword] = useState(true);
     const [message, setMessage] = useState();

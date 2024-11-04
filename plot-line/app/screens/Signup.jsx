@@ -20,6 +20,9 @@ import { Octicons, Ionicons } from '@expo/vector-icons';
 // keyboard avoiding wrapper
 import KeyboardAvoidingWrapper from '../../components/KeyboardAvoidingWrapper';
 
+// Host URL
+import { HostURL } from '../../constants/URL.ts'
+
 import {
     StyledContainer,
     InnerContainer,
@@ -45,7 +48,7 @@ import {
 const {brand, darkLight, primary} = Colors;
 
 const Signup = ({navigation}) => {
-    const url = "http://172.30.128.25:3000/user/signup" // CHANGE IF IP ADDRESS CHANGES
+    const url = HostURL + "/user/signup"
 
     const [hidePassword, setHidePassword] = useState(true);
     const [message, setMessage] = useState();
