@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import { StatusBar } from 'expo-status-bar'
 
 //formik
@@ -7,6 +7,12 @@ import { View, ScrollView } from 'react-native';
 
 // API client
 import axios from 'axios';
+
+// Async storage
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// credential contexts
+import { CredentialsContext } from '../../components/CredentialsContext';
 
 // icons
 import { Octicons, Ionicons } from '@expo/vector-icons';
@@ -45,6 +51,9 @@ const Signup = ({navigation}) => {
     const [message, setMessage] = useState();
     const [messageType, setMessageType] = useState();
     const [submitting, setSubmitting] = useState();
+   
+    // context
+    const {storedCredentials, setStoredCredentials} = useContext(CredentialsContext);
 
     const handleSignup = (credentials) => {
         handleMessage(null); // Reset error message
@@ -58,7 +67,7 @@ const Signup = ({navigation}) => {
                 handleMessage(message, status);
             } else {
                 console.log("SIGNUP SUCESSFUL")
-                navigation.navigate('TabLayout', {...data});
+                persistLogin(data, message, status); // IF DOING GOOGLE SIGN IN, REWATCH KEEPING USER LOGGED IN
             }
             setSubmitting(false);
         })
@@ -72,6 +81,18 @@ const Signup = ({navigation}) => {
     const handleMessage = (message, type = 'FAILED') => {
         setMessage(message);
         setMessageType(type);
+    }
+
+    const persistLogin = (credentials, message, status) => {
+        AsyncStorage.setItem('plotlineCredentials', JSON.stringify(credentials))
+        .then(() => {
+            handleMessage(message, status);
+            setStoredCredentials(credentials);
+        })
+        .catch((error => {
+            console.log(error);
+            handleMessage('Persisting login failed');
+        }))
     }
 
 

@@ -1,5 +1,11 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import { StatusBar } from 'expo-status-bar'
+
+// async storage
+import AsyncStorage  from '@react-native-async-storage/async-storage'
+
+// credntials context
+import { CredentialsContext } from '../../components/CredentialsContext.jsx'
 
 import {
     StyledContainer,
@@ -16,7 +22,18 @@ import {
 } from '../../components/styles';
 import { ScrollView } from 'react-native';
 
-const Profile = ({navigation}) => {
+const Profile = () => {
+    //context -> will be important later
+    const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
+    const { name, username, email } = storedCredentials;
+
+    const clearLogin = () => {
+        AsyncStorage.removeItem('plotlineCredentials')
+        .then(() => {
+            setStoredCredentials("");
+        })
+        .catch(error => console.log(error))
+    }
 
     return (
         <ScrollView>
@@ -26,11 +43,11 @@ const Profile = ({navigation}) => {
                         <PageTitle>Profile</PageTitle>
                         <SubTitle>Current User</SubTitle>
                         <InnerContainer>
-                            <SubTitle profile={true}>FULL NAME HERE</SubTitle>
-                            <SubTitle profile={true}>USER NAME HERE</SubTitle>
-                            <SubTitle profile={true}>EMAIL HERE</SubTitle>
+                            <SubTitle profile={true}>{name || 'NAME SHOULD BE HERE'}</SubTitle>
+                            <SubTitle profile={true}>{username || 'USER NAME HERE'}</SubTitle>
+                            <SubTitle profile={true}>{email || 'EMAIL HERE'}</SubTitle>
                             <Line />
-                            <StyledButton onPress={() => navigation.navigate('Login')}>
+                            <StyledButton onPress={clearLogin}>
                                 <ButtonText>Logout</ButtonText>
                             </StyledButton>      
                         </InnerContainer>

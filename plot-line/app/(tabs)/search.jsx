@@ -15,7 +15,13 @@
 
 //figuring out commits
 import { StyleSheet, Text, TextInput, View, FlatList, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
+
+// async storage
+import AsyncStorage  from '@react-native-async-storage/async-storage'
+
+// credntials context
+import { CredentialsContext } from '../../components/CredentialsContext.jsx'
 
 import {
   StyledContainer,
@@ -45,6 +51,11 @@ const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes'
 const Search = () => {
   const [query, setQuery] = useState('')
   const [books, setBooks] = useState([])
+
+  //context -> will be important later
+  const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
+  const { name, username, email } = storedCredentials;
+
 
   const fetchBooks = async () => {
     try {

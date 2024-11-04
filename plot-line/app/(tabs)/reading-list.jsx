@@ -1,5 +1,11 @@
-import React, {useState} from 'react';
-import { StatusBar } from 'expo-status-bar'
+import React, {useState, useContext} from 'react';
+import { StatusBar } from 'expo-status-bar';
+
+// async storage
+import AsyncStorage  from '@react-native-async-storage/async-storage'
+
+// credntials context
+import { CredentialsContext } from '../../components/CredentialsContext.jsx'
 
 import {
     StyledContainer,
@@ -16,6 +22,11 @@ import {
 import { ScrollView } from 'react-native';
 
 const ReadingList = ({navigation}) => {
+    //context -> will be important later
+    const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
+    const { name, username, email } = storedCredentials;
+
+
     return (
         <ScrollView>
             <StyledContainer>

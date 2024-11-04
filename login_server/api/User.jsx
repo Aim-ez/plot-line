@@ -154,7 +154,7 @@ router.post('/login', (req, res) => {
             } else {
                 res.json({
                     status: "FAILED",
-                    message: "Invalid email",
+                    message: "No user with that email exists",
                 })
             }
         }).catch(err => {
