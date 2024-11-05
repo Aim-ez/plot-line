@@ -14,7 +14,7 @@
 // const styles = StyleSheet.create({})
 
 //figuring out commits
-import { StyleSheet, Text, TextInput, View, FlatList, TouchableOpacity } from 'react-native'
+import { StyleSheet, Button, Text, Modal, View, FlatList, TouchableOpacity } from 'react-native'
 import React, { useState, useContext } from 'react'
 
 // async storage
@@ -46,16 +46,17 @@ const Book = ({
   },
 });
 
+GOOGLE_BOOKS_API_KEY = 'AIzaSyA4Z1Qm7N2_6AnPLHOtS577y4-nV_NrAb8'
+
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
 
-const Search = () => {
+const Search = ({navigation}) => {
   const [query, setQuery] = useState('');
   const [books, setBooks] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [sortOrder, setSortOrder] = useState('');
-  const navigation = useNavigation();
 
   const fetchBooks = async () => {
     try {
@@ -116,7 +117,7 @@ const Search = () => {
   ];
 
   return (
-    <View style={styles.container}>
+    <StyledContainer>
       <PageLogo source={require('../../assets/images/PlotLogo.png')} />
       <SearchBar
         search={true}
@@ -226,7 +227,7 @@ const Search = () => {
           </View>
         </View>
       </Modal>
-    </View>
+    </StyledContainer>
   );
 };
 

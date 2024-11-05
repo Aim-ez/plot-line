@@ -45,10 +45,19 @@ nodemon server.jsx
 
 This should launch the mongodb database so that you're able to make calls to it. You will see the message "DB Connected", if this was successful. 
 
+# BCRYPT ERROR
+Try either:
+npm rebuild bcrypt --build-from-source
+
+Or:
+npm uninstall bcrypt
+npm install bcrypt
+
+
 ## Run the Frontend Expo App
 npx expo start --tunnel
 
-npm rebuild bcrypt --build-from-source
+
 
 
 And you should be good to go!
