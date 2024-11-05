@@ -72,8 +72,9 @@ export const HeaderImage = styled.Image`
 `;
 
 export const BookCoverImage = styled.Image`
-    width: 100%;
-    height: 100%;
+    width: 250px;
+    height: 350px;
+    resize-mode: contain;
 `;
 
 export const Avatar = styled.Image`

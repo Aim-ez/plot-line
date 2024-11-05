@@ -26,18 +26,26 @@ import {
   HeaderImage,
 } from '../../components/styles';
 
-const BookDetails = ({ route }) => {
+const BookDetails = ({ route, navigation }) => {
   const { book, fromReview } = route.params;
   console.log("In book details: ", book);
   console.log(fromReview)
 
+  goToPlotReview = () => {
+    navigation.navigate('ReviewPlotlineBook', { book: book })
+  }
+
+  goToGoogleReview = () => {
+    navigation.navigate('ReviewGoogleBook', { book: book })
+  }
+
 
   const renderGoogleBook = () => {
     return (
-      <>
+      <InnerContainer>
         <Line></Line>
         {book.volumeInfo.imageLinks?.thumbnail ? (
-          <BookCoverImage source={{ uri: book.volumeInfo.imageLinks.thumbnail }} style={styles.image} />
+          <BookCoverImage source={{ uri: book.volumeInfo.imageLinks.thumbnail }}/>
         ) : (
           <Text>No Image Available</Text>  // This will show text if image is missing
         )}
@@ -48,9 +56,12 @@ const BookDetails = ({ route }) => {
         <SubTitle author={true}>Authors:</SubTitle>
         <SubTitle author={true}>{book.volumeInfo.authors?.join(', ')}</SubTitle>
         <ExtraText bookDesc={true}>{book.volumeInfo.description || "No description available."}</ExtraText>
-      
+        <StyledButton onPress={goToGoogleReview}>
+          <ButtonText>I've Read This</ButtonText>
+        </StyledButton>
         </InnerContainer>
-      </>
+      </InnerContainer>
+  
     )
   }
 
@@ -62,7 +73,11 @@ const BookDetails = ({ route }) => {
         <SubTitle author={true}>Authors:</SubTitle>
         <SubTitle author={true}>{book.author}</SubTitle>
         <ExtraText>{book.description || "No description available."}</ExtraText>
-        
+
+
+       <StyledButton onPress={goToPlotReview}>
+          <ButtonText>I've Read This</ButtonText>
+        </StyledButton>
       </InnerContainer>
     )
   }
@@ -87,33 +102,3 @@ const BookDetails = ({ route }) => {
 
 export default BookDetails;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#EFEBF9',
-  },
-  image: {
-    width: 150,
-    height: 200,
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  authors: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: '#666',
-    marginBottom: 20,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#333',
-  },
-});

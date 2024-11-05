@@ -15,6 +15,8 @@ import TabLayout from '../app/(tabs)/_layout';
 import UserReviews from '../app/screens/UserReviews';
 import OthersReviews from '../app/screens/OthersReviews';
 import BookDetails from '../app/screens/BookDetails';
+import ReviewGoogleBook from '../app/screens/ReviewGoogleBook';
+import ReviewPlotlineBook from '../app/screens/ReviewPlotlineBook';
 
 const Stack = createStackNavigator();
 
@@ -43,6 +45,9 @@ const RootStack = () => {
                                         headerBackTitleVisible: false, // Optional: Hide back title
                                     }} 
                                 />
+                            <Stack.Screen name="ReviewGoogleBook" component={ReviewGoogleBook} options={{title: 'Back to Search', headerShown: true}}/>
+                            <Stack.Screen name="ReviewPlotlineBook" component={ReviewPlotlineBook} options={{title: '', headerShown: true}}/>
+
                         </>
                         : <>
                         <Stack.Screen name="Welcome" component={Welcome}/>
