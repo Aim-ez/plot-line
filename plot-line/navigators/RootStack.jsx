@@ -12,6 +12,9 @@ import Login from '../app/screens/Login';
 import Signup from '../app/screens/Signup';
 import Welcome from '../app/screens/Welcome';
 import TabLayout from '../app/(tabs)/_layout';
+import UserReviews from '../app/screens/UserReviews';
+import OthersReviews from '../app/screens/OthersReviews';
+
 
 const Stack = createStackNavigator();
 
@@ -28,7 +31,11 @@ const RootStack = () => {
                     >
 
                     {storedCredentials ? 
-                        <Stack.Screen name="TabLayout" component={TabLayout}/>
+                        <>
+                            <Stack.Screen name="TabLayout" component={TabLayout}/>
+                            <Stack.Screen name="UserReviews" component={UserReviews} options={{title: 'Back to Profile', headerShown: true}}/>
+                            <Stack.Screen name="OthersReviews" component={OthersReviews} options={{title: 'Back to Home', headerShown: true}}/>
+                        </>
                         : <>
                         <Stack.Screen name="Welcome" component={Welcome}/>
                         <Stack.Screen name="Login" component={Login}/>

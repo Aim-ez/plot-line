@@ -34,16 +34,8 @@ const ReadingList = ({navigation}) => {
                 <InnerContainer>
                     <PageTitle>Your Reading List</PageTitle>
                     <SubTitle>Features Coming Soon</SubTitle>
-
-                    <WelcomeContainer>
-                        <StyledFormArea>
-                        <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
-                            <Line />
-                            <StyledButton onPress={() => navigation.navigate('Home')}>
-                                <ButtonText>Useless Button!!</ButtonText>
-                            </StyledButton>                            
-                        </StyledFormArea>
-                    </WelcomeContainer>
+                    <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
+                    <Line />   
                 </InnerContainer>
             </StyledContainer>
         </ScrollView>

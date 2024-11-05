@@ -11,6 +11,83 @@ const Book = require('./../models/Book.jsx');
 // Password handler
 const bcrypt = require('bcrypt');
 
+// Posts a review to the DB (NOTE: DOES NOT HAVE DATA CHECKS)
+router.post('/createReview', (req, res) => {
+    let {userId, bookId, rating, description, date} = req.body;
+    description = description.trim();
+    date = date.trim();
+
+    if (userId == "" || bookId == "" || rating=="" || date=="" || description=="") {
+        res.json({
+            status: "FAILED",
+            message: "Empty input fields!"
+        });
+    } else {
+        const newReview = new Review({
+            userId,
+            bookId,
+            rating,
+            description,
+            date,
+        });
+
+        newReview.save().then(result => {
+            console.log("REVIEW ADD SUCCESSFUL")
+            res.json({
+                status: "SUCCESS",
+                message: "Review add sucessful!",
+                data: result, //sent back to frontend
+            })
+        }).catch(err => {
+            console.log(err);
+            res.json({
+                status: "FAILED", 
+                message: "An error occured while creating review!"
+            })
+        })
+    }
+})
+
+// Posts a book to the DB (NOTE: DOES NOT HAVE DATA CHECKS)
+router.post('/createBook', (req, res) => {
+    let {isbn, title, author, published, description} = req.body;
+    isbn = isbn;
+    title = title.trim();
+    author = author.trim();
+    published = published.trim();
+    description = description.trim();
+
+    if (isbn == "" || title == "" || author=="" || published=="" || description=="") {
+        res.json({
+            status: "FAILED",
+            message: "Empty input fields!"
+        });
+    } else {
+        const newBook = new Book({
+            isbn,
+            title,
+            author,
+            published,
+            description,
+        });
+
+        newBook.save().then(result => {
+            console.log("BOOK ADD SUCCESSFUL")
+            res.json({
+                status: "SUCCESS",
+                message: "Book add sucessful!",
+                data: result, //sent back to frontend
+            })
+        }).catch(err => {
+            console.log(err);
+            res.json({
+                status: "FAILED", 
+                message: "An error occured while creating book!"
+            })
+        })
+    }
+})
+
 // Signup
 router.post('/signup', (req, res) => {
     let {name, username, email, password} = req.body;
@@ -192,6 +269,103 @@ router.post('/login', (req, res) => {
 })
 
 
- 
+router.get('/getReviews', async(req, res) => {
+    let userId = req.query.userId;
+    
+    try {
+        const data=await Review.find({userId})
+        res.json({
+            status: "SUCCESS", 
+            data: data
+        });
+    } catch (error) {
+        console.log(error)
+        res.json({
+            status: "FAILED",
+            message: "An error occured while fetching review data.",
+        })
+    }
+});
+
+// backend route to get book details by bookId
+router.get('/getBookData', async (req, res) => {
+    const { bookId } = req.query;
+
+    if (!bookId) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "Book ID is required."
+        });
+    }
+
+    try {
+        // Fetch the book by ID
+        const book = await Book.findById(bookId);
+
+        if (!book) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "Book not found."
+            });
+        }
+
+        // Return book data
+        res.json({
+            status: "SUCCESS",
+            data: {
+                isbn: book.isbn,
+                title: book.title,
+                author: book.author,
+                published: book.published,
+                description: book.description
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.json({
+            status: "FAILED",
+            message: "An error occurred while fetching book data."
+        });
+    }
+});
+
+// Route to get user ID by username
+router.get('/getUserIdByUsername', async (req, res) => {
+    let { username } = req.query; // Get username from query parameters
+    username = username.trim()
+
+    if (!username) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "Username parameter is required"
+        });
+    }
+
+    try {
+        // Find the user by username
+        const data = await User.findOne({ username: username });
+
+        if (data == null) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "User not found"
+            });
+        }
+
+        // Return the user ID
+        return res.status(200).json({
+            status: "SUCCESS",
+            data: {_id: data._id} // Returning the _id of the user
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: "FAILED",
+            message: "An error occurred while fetching user data"
+        });
+    }
+});
 
 module.exports = router;

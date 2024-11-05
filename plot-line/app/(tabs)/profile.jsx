@@ -25,12 +25,14 @@ import {
     Line,
     WelcomeContainer,
     Avatar,
-    ReviewBox
+    ReviewBox,
+    TextLink,
+    TextLinkContent
 } from '../../components/styles';
 import { ScrollView } from 'react-native';
 
-const Profile = () => {
-    const url = HostURL + "/profile";
+const Profile = ({navigation}) => {
+    const url = HostURL + "/user/profile";
     console.log(url)
 
     //context -> will be important later
@@ -56,15 +58,29 @@ const Profile = () => {
         <ScrollView>
             <StyledContainer>
                 <StatusBar style="dark"/>
-                <PageTitle>Your Profile</PageTitle>
+                <PageTitle>Profile</PageTitle>
+                <Line thick={true}></Line>
                     <InnerContainer>
+
                         <SubTitle>Your Reviews</SubTitle>
-                        <SubTitle profile={true}>You have a total of {numReviews} reviews!</SubTitle>
-                        <ReviewBox>
-                            <SubTitle>Test</SubTitle>
-                        </ReviewBox>
+                        <TextLink onPress={() => navigation.navigate("UserReviews")}>
+                            <TextLinkContent profile={true}>See Reviews</TextLinkContent>
+                        </TextLink>
+
                     </InnerContainer>
 
+                    <Line></Line>
+
+                    <InnerContainer>
+                        <SubTitle>Your Favourites</SubTitle>
+                        <SubTitle profile={true}>Feature coming soon!</SubTitle>
+                        <TextLink>
+                            <TextLinkContent profile={true}>See Favourites</TextLinkContent>
+                        </TextLink>
+
+                    </InnerContainer>
+
+                    <Line></Line>
 
                     <InnerContainer>
                         <SubTitle>Information</SubTitle>

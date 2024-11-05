@@ -21,18 +21,24 @@ export const Colors = {
     tertiary: '#1F2937',
     darkLight: '#9CA3AF',
     brand: '#6D28D9',
+    back: '#EFEBF9',
     green: '#10B981',
     red: '#EF4444',
 };
 
-const { primary, secondary, tertiary, darkLight, brand, green, red } = Colors;
+const { back, primary, secondary, tertiary, darkLight, brand, green, red } = Colors;
 
 export const StyledContainer = styled.View`
     flex: 1;
     padding: 5px;
     padding-top: ${StatusBarHeight + 10}px;
-    background-color: ${primary};
+    background-color: ${back};
     padding-bottom: 120px;
+
+    ${(props) => props.home && `
+        margin-top: 0px;
+        padding-top: 0px;
+     `}
 `;
 
 export const InnerContainer = styled.View`
@@ -59,6 +65,10 @@ export const PageLogo = styled.Image`
         height: 100px;
         resize-mode: contain;
     `}
+`;
+
+export const HeaderImage = styled.Image`
+    margin-bottom: 20px;
 `;
 
 export const Avatar = styled.Image`
@@ -192,6 +202,7 @@ export const ExtraText = styled.Text`
         align-content: center;
         color: ${tertiary};
         font-size: 15px;
+        margin: 10px;
 `;
 
 export const TextLink = styled.TouchableOpacity`
@@ -206,22 +217,43 @@ export const TextLinkContent = styled.Text`
 `;
 
 export const SearchBar = styled.TextInput`
-        height: 40px;
+        height: 60px;
         border-color: '#A574D5';
         border-width: 1px;
         width: '100%';
         padding-horizontal: 10px;
         margin-bottom: 10px;
-        border-radius: 5px;
+        border-radius: 10px;
         background-color: '#fff';
+        font-size: 15px;
+
+        ${(props) => props.search == true && `
+            font-size: 20px;
+        `}
 `;
 
 export const ReviewBox = styled.View`
-        height: 100px;
-        border-color: ${brand};
-        border-width: 2px;
-        width: 100%;
-        padding: 10px;
-        margin: 5px;
-        background-color: '#111';
+    background-color: #fff;            
+    padding: 16px;                    
+    margin: 8px 0;                    
+    border-radius: 8px;                
+    shadow-color: #000;               
+    shadow-offset: 0px 2px;            
+    shadow-opacity: 0.1;               
+    shadow-radius: 4px;             
+    border-width: 2px;
+    border-color: ${brand};
+`;
+
+export const ReviewText = styled.Text`
+    font-size: 19px;
+    color: ${tertiary};
+    margin-bottom: 6px;
+
+    ${(props) => props.date == true && `
+        font-size: 12px;
+        color: #aaa;
+        text-align: right;
+        margin-top: 0px;
+    `}
 `;
