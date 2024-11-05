@@ -14,7 +14,7 @@ import Welcome from '../app/screens/Welcome';
 import TabLayout from '../app/(tabs)/_layout';
 import UserReviews from '../app/screens/UserReviews';
 import OthersReviews from '../app/screens/OthersReviews';
-
+import BookDetails from '../app/screens/BookDetails';
 
 const Stack = createStackNavigator();
 
@@ -35,6 +35,15 @@ const RootStack = () => {
                             <Stack.Screen name="TabLayout" component={TabLayout}/>
                             <Stack.Screen name="UserReviews" component={UserReviews} options={{title: 'Back to Profile', headerShown: true}}/>
                             <Stack.Screen name="OthersReviews" component={OthersReviews} options={{title: 'Back to Home', headerShown: true}}/>
+                            <Stack.Screen 
+                                    name="BookDetails" 
+                                    component={BookDetails} 
+                                    options={{
+                                        headerShown: true, // Show header for BookDetails
+                                        title: 'Book Details', // Optional: Set header title
+                                        headerBackTitleVisible: false, // Optional: Hide back title
+                                    }} 
+                                />
                         </>
                         : <>
                         <Stack.Screen name="Welcome" component={Welcome}/>
@@ -42,7 +51,6 @@ const RootStack = () => {
                         <Stack.Screen name="Signup" component={Signup}/>
                         </>
                     }
-
                     </Stack.Navigator>
                 </NavigationContainer>
 
