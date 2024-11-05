@@ -31,10 +31,8 @@ import {
 } from '../../components/styles';
 import { ScrollView, FlatList } from 'react-native';
 
-function OthersReviews({route}) {
+function OthersReviews({route, navigation}) {
     const { userId, handle } = route.params;
-    console.log(handle)
-    console.log(userId)
 
     const url = HostURL + "/user/getReviews";
     const bookurl = HostURL + "/user/getBookData";
@@ -82,10 +80,14 @@ function OthersReviews({route}) {
             return <ReviewText>Loading book details...</ReviewText>;
         }
 
+        const handlePress = () => {
+            console.log(bookData);
+            navigation.navigate('BookDetails', { book: bookData, fromReview: true})
+        }
 
         return (
             <>
-            <ReviewBox>
+            <ReviewBox onPress={handlePress}>
                 <ReviewText date={true}>{formatDate(review.date)}</ReviewText>
                 <ReviewText>Book: {bookData.title}</ReviewText>
                 <ReviewText>Author: {bookData.author}</ReviewText>

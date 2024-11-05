@@ -29,7 +29,6 @@ const RootStack = () => {
                         }}
                         initialRouteName="Welcome"
                     >
-
                     {storedCredentials ? 
                         <>
                             <Stack.Screen name="TabLayout" component={TabLayout}/>
@@ -40,7 +39,7 @@ const RootStack = () => {
                                     component={BookDetails} 
                                     options={{
                                         headerShown: true, // Show header for BookDetails
-                                        title: 'Book Details', // Optional: Set header title
+                                        title: '', // Optional: Set header title
                                         headerBackTitleVisible: false, // Optional: Hide back title
                                     }} 
                                 />

@@ -83,10 +83,14 @@ function UserReviews({navigation}) {
             return <ReviewText>Loading book details...</ReviewText>;
         }
 
+        const handlePress = () => {
+            console.log(bookData);
+            navigation.navigate('BookDetails', { book: bookData, fromReview: true})
+        }
 
         return (
             <>
-            <ReviewBox>
+            <ReviewBox onPress={handlePress}>
                 <ReviewText date={true}>{formatDate(review.date)}</ReviewText>
                 <ReviewText>Book: {bookData.title}</ReviewText>
                 <ReviewText>Author: {bookData.author}</ReviewText>

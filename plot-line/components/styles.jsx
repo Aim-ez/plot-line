@@ -71,6 +71,11 @@ export const HeaderImage = styled.Image`
     margin-bottom: 20px;
 `;
 
+export const BookCoverImage = styled.Image`
+    width: 100%;
+    height: 100%;
+`;
+
 export const Avatar = styled.Image`
     width: 400px;
     height: 400px;
@@ -109,6 +114,10 @@ export const SubTitle = styled.Text`
     ${(props) => props.profile && `
         margin-bottom: 10px;
         font-weight: normal;
+    `}
+
+    ${(props) => props.author && `
+        text-align: center;
     `}
 `;
 
@@ -203,6 +212,18 @@ export const ExtraText = styled.Text`
         color: ${tertiary};
         font-size: 15px;
         margin: 10px;
+
+        ${(props) => props.bookDesc == true && `
+            font-size: 18px;
+            lineHeight: 24px;
+            letterSpacing: 0.5px;
+            text-align: justify;
+            padding-horizontal: 15px;
+            shadow-color: '#000';
+            shadow-offset: {width: 0px; height: 2px;};
+            shadow-opacity: 0.2px;
+            shadow-radius: 5px;
+        `}
 `;
 
 export const TextLink = styled.TouchableOpacity`
@@ -232,7 +253,7 @@ export const SearchBar = styled.TextInput`
         `}
 `;
 
-export const ReviewBox = styled.View`
+export const ReviewBox = styled.TouchableOpacity`
     background-color: #fff;            
     padding: 16px;                    
     margin: 8px 0;                    

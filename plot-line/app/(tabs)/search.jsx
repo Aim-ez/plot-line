@@ -97,7 +97,7 @@ const Search = ({navigation}) => {
   const renderBookItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.bookItem} 
-      onPress={() => navigation.navigate('BookDetails', { book: item })}
+      onPress={() => navigation.navigate('BookDetails', { book: item, fromReview: false })}
     >
       <Text style={styles.bookTitle}>{item.volumeInfo.title}</Text>
       <Text style={styles.bookAuthor}>{item.volumeInfo.authors?.join(', ')}</Text>

@@ -1,17 +1,86 @@
 import React from 'react';
 import { StyleSheet, Text, View, Image, ScrollView } from 'react-native';
 
+
+import {
+  StyledContainer,
+  InnerContainer,
+  PageLogo,
+  PageTitle,
+  SubTitle,
+  StyledFormArea,
+  LeftIcon, 
+  RightIcon,
+  StyledInputLabel,
+  StyledTextInput,
+  StyledButton,
+  ButtonText,
+  Colors,
+  MsgBox,
+  Line,
+  ExtraView,
+  ExtraText,
+  TextLink,
+  TextLinkContent,
+  BookCoverImage,
+  HeaderImage,
+} from '../../components/styles';
+
 const BookDetails = ({ route }) => {
-  const { book } = route.params;
+  const { book, fromReview } = route.params;
+  console.log("In book details: ", book);
+  console.log(fromReview)
+
+
+  const renderGoogleBook = () => {
+    return (
+      <>
+        <Line></Line>
+        {book.volumeInfo.imageLinks?.thumbnail ? (
+          <BookCoverImage source={{ uri: book.volumeInfo.imageLinks.thumbnail }} style={styles.image} />
+        ) : (
+          <Text>No Image Available</Text>  // This will show text if image is missing
+        )}
+
+        <InnerContainer>
+    
+        <PageTitle>{book.volumeInfo.title}</PageTitle>
+        <SubTitle author={true}>Authors:</SubTitle>
+        <SubTitle author={true}>{book.volumeInfo.authors?.join(', ')}</SubTitle>
+        <ExtraText bookDesc={true}>{book.volumeInfo.description || "No description available."}</ExtraText>
+      
+        </InnerContainer>
+      </>
+    )
+  }
+
+  const renderPlotLineBook = () => {
+    return (
+      <InnerContainer>
+        <HeaderImage source={require('../../assets/images/books2.png')}/>
+        <PageTitle>{book.title}</PageTitle>
+        <SubTitle author={true}>Authors:</SubTitle>
+        <SubTitle author={true}>{book.author}</SubTitle>
+        <ExtraText>{book.description || "No description available."}</ExtraText>
+        
+      </InnerContainer>
+    )
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {book.volumeInfo.imageLinks?.thumbnail && (
-        <Image source={{ uri: book.volumeInfo.imageLinks.thumbnail }} style={styles.image} />
-      )}
-      <Text style={styles.title}>{book.volumeInfo.title}</Text>
-      <Text style={styles.authors}>Authors: {book.volumeInfo.authors?.join(', ')}</Text>
-      <Text style={styles.description}>{book.volumeInfo.description || "No description available."}</Text>
+    <ScrollView> 
+    
+        <StyledContainer home={true}>
+          {fromReview ? (
+            renderPlotLineBook()
+          ) : (
+            renderGoogleBook()
+          )}
+
+       <Line></Line>
+
+        </StyledContainer>
+
     </ScrollView>
   );
 };
