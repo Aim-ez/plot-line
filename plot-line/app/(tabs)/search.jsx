@@ -127,6 +127,13 @@ const Search = ({navigation}) => {
   return (
     <StyledContainer>
       <InnerContainer>
+        <TouchableOpacity 
+          style={styles.plusButton} 
+          onPress={() => navigation.navigate('addManualBook')}
+        >
+          <Text style={styles.plusButtonText}>+</Text>
+        </TouchableOpacity>
+
         <PageLogo source={require('../../assets/images/PlotLogo.png')} />
         <SearchBar
           search={true}
@@ -243,6 +250,25 @@ const Search = ({navigation}) => {
 
 // Add your styles here
 const styles = StyleSheet.create({
+  plusButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#007bff',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+
+  plusButtonText: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+
   container: {
     flex: 1,
     padding: 20,

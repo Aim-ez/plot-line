@@ -19,6 +19,7 @@ import ReviewGoogleBook from '../app/screens/ReviewGoogleBook';
 import ReviewPlotlineBook from '../app/screens/ReviewPlotlineBook';
 import PlotlineBookReviews from '../app/screens/PlotlineBookReviews';
 import GoogleBookReviews from '../app/screens/GoogleBookReviews';
+import AddManualBook from '../app/screens/addManualBook';
 
 const Stack = createStackNavigator();
 
@@ -50,6 +51,15 @@ const RootStack = () => {
                                         headerBackTitleVisible: false, // Optional: Hide back title
                                     }} 
                                 />
+                            <Stack.Screen
+                                name="addManualBook"
+                                component={AddManualBook}
+                                options={{
+                                    headerShown: true, // Show header for BookDetails
+                                    title: '', // Optional: Set header title
+                                    headerBackTitleVisible: false, // Optional: Hide back title
+                                }} 
+                            />
                             <Stack.Screen name="ReviewGoogleBook" component={ReviewGoogleBook} options={{title: 'Back to Search', headerShown: true}}/>
                             <Stack.Screen name="ReviewPlotlineBook" component={ReviewPlotlineBook} options={{title: '', headerShown: true}}/>
 
