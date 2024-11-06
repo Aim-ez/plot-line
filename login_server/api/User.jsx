@@ -17,7 +17,7 @@ router.post('/createReview', (req, res) => {
     description = description.trim();
     date = date.trim();
 
-    if (userId == "" || bookId == "" || rating=="" || date=="" || description=="") {
+    if (userId == "" || bookId == "" || rating=="" || date=="") {
         res.json({
             status: "FAILED",
             message: "Empty input fields!"
@@ -57,7 +57,9 @@ router.post('/createBook', (req, res) => {
     published = published.trim();
     description = description.trim();
 
-    if (isbn == "" || title == "" || author=="" || published=="" || description=="") {
+    //Due to google books not having all info, just check that we have 
+    //at least one metric to find the book by
+    if (isbn == "" && title == "" && author=="") {
         res.json({
             status: "FAILED",
             message: "Empty input fields!"
@@ -285,6 +287,42 @@ router.get('/getReviews', async(req, res) => {
             message: "An error occured while fetching review data.",
         })
     }
+});
+
+// RETURN bookId IF BOOK WITH GIVEN DETAILS EXISTS
+// RETURN null IF BOOK WITH GIVEN DETAILS DOES NOT EXIST
+router.get('/bookExists', async (req, res) => {
+    const { title, isbn, author } = req.query;
+
+    //All of these should match a book if it exists in our DB
+    //INCLUDING IF ANY OF THEM ARE NULL
+    try {
+        const book = await Book.findOne({
+            title: title,
+            author: author,
+            isbn: isbn
+        });
+
+        if (!book) {
+            //book not found
+            return res.status(201).json({
+               status: "NOT FOUND",
+            });
+        }
+
+        //book found
+        res.json({
+            status: "FOUND",
+            data: {bookId: book._id}
+        });
+    } catch (error) {
+        console.error(error);
+        res.json({
+            status: "FAILED",
+            message: "An error occurred while fetching book data."
+        });
+    }
+
 });
 
 // backend route to get book details by bookId

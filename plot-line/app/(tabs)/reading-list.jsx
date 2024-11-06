@@ -17,7 +17,8 @@ import {
     ButtonText,
     Line,
     WelcomeContainer,
-    PageLogo
+    PageLogo, 
+    HeaderImage
 } from '../../components/styles';
 import { ScrollView } from 'react-native';
 
@@ -35,7 +36,7 @@ const ReadingList = ({navigation}) => {
                     <PageTitle>Your Reading List</PageTitle>
                     <SubTitle>Features Coming Soon</SubTitle>
                     <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
-                    <Line />   
+                    <HeaderImage rl={true} source={require('../../assets/images/books3.png')}/>
                 </InnerContainer>
             </StyledContainer>
         </ScrollView>

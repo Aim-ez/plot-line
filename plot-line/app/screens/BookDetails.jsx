@@ -31,11 +31,11 @@ const BookDetails = ({ route, navigation }) => {
   console.log("In book details: ", book);
   console.log(fromReview)
 
-  goToPlotReview = () => {
+  goToPlotReview = ({book}) => {
     navigation.navigate('ReviewPlotlineBook', { book: book })
   }
 
-  goToGoogleReview = () => {
+  goToGoogleReview = ({book}) => {
     navigation.navigate('ReviewGoogleBook', { book: book })
   }
 
@@ -56,7 +56,7 @@ const BookDetails = ({ route, navigation }) => {
         <SubTitle author={true}>Authors:</SubTitle>
         <SubTitle author={true}>{book.volumeInfo.authors?.join(', ')}</SubTitle>
         <ExtraText bookDesc={true}>{book.volumeInfo.description || "No description available."}</ExtraText>
-        <StyledButton onPress={goToGoogleReview}>
+        <StyledButton onPress={() => goToGoogleReview({book: book})}>
           <ButtonText>I've Read This</ButtonText>
         </StyledButton>
         </InnerContainer>
@@ -75,7 +75,7 @@ const BookDetails = ({ route, navigation }) => {
         <ExtraText>{book.description || "No description available."}</ExtraText>
 
 
-       <StyledButton onPress={goToPlotReview}>
+       <StyledButton onPress={() => goToPlotReview({book:book})}>
           <ButtonText>I've Read This</ButtonText>
         </StyledButton>
       </InnerContainer>

@@ -69,6 +69,12 @@ export const PageLogo = styled.Image`
 
 export const HeaderImage = styled.Image`
     margin-bottom: 20px;
+    
+    ${(props) => props.rl && `
+        width: 500px;
+        height: 400px;
+        resize-mode: contain;
+    `}
 `;
 
 export const BookCoverImage = styled.Image`
