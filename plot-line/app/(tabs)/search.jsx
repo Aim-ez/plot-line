@@ -126,25 +126,28 @@ const Search = ({navigation}) => {
 
   return (
     <StyledContainer>
-      <PageLogo source={require('../../assets/images/PlotLogo.png')} />
-      <SearchBar
-        search={true}
-        placeholder="Search for books or authors..."
-        value={query}
-        onChangeText={setQuery}
-      />
-      <StyledButton onPress={() => setModalVisible(true)}>
-        <ButtonText>Filter: {selectedGenre || 'None'}</ButtonText>
-      </StyledButton>
-      <StyledButton onPress={fetchBooks}>
-        <ButtonText>Search</ButtonText>
-      </StyledButton>
-      <FlatList
-        data={books}
-        keyExtractor={(item) => item.id}
-        renderItem={renderBookItem}
-      />
-      
+      <InnerContainer>
+        <PageLogo source={require('../../assets/images/PlotLogo.png')} />
+        <SearchBar
+          search={true}
+          placeholder="Search for books or authors..."
+          value={query}
+          onChangeText={setQuery}
+        />
+        
+        <StyledButton wide={true} onPress={() => setModalVisible(true)}>
+          <ButtonText>Filter: {selectedGenre || 'None'}</ButtonText>
+        </StyledButton>
+        <StyledButton wide={true} onPress={fetchBooks}>
+          <ButtonText>Search</ButtonText>
+        </StyledButton>
+        <FlatList
+          data={books}
+          keyExtractor={(item) => item.id}
+          renderItem={renderBookItem}
+        />
+      </InnerContainer>
+
       {/* Filter Modal */}
       <Modal
         animationType="slide"

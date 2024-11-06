@@ -35,7 +35,7 @@ export const StyledContainer = styled.View`
     padding: 5px;
     padding-top: ${StatusBarHeight + 10}px;
     background-color: ${back};
-    padding-bottom: 120px;
+    padding-bottom: 0px;
 
     ${(props) => props.home && `
         margin-top: 0px;
@@ -178,6 +178,10 @@ export const StyledButton = styled.TouchableOpacity`
     border-radius: 65px;
     margin-vertical: 15px;
     height: 60px;
+
+    ${(props) => props.wide == true && `
+        width: 100%;
+        `}
 
     ${(props) => props.google == true && `
         background-color: ${green};
