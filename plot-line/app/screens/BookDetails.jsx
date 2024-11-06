@@ -45,7 +45,8 @@ const BookDetails = ({ route, navigation }) => {
         {book.volumeInfo.imageLinks?.thumbnail ? (
           <BookCoverImage source={{ uri: book.volumeInfo.imageLinks.thumbnail }}/>
         ) : (
-          <Text>No Image Available</Text>  // This will show text if image is missing
+          // This will show text if image is missing
+          <HeaderImage source={require('../../assets/images/books2.png')}/>
         )}
 
         <InnerContainer>
@@ -69,8 +70,17 @@ const BookDetails = ({ route, navigation }) => {
 
   const renderPlotLineBook = () => {
     return (
+    
       <InnerContainer>
-        <HeaderImage source={require('../../assets/images/books2.png')}/>
+
+        <Line></Line>
+        {book.coverLink ? (
+          <BookCoverImage source={{ uri: book.coverLink }}/>
+        ) : (
+            // This will show text if image is missing
+            <HeaderImage source={require('../../assets/images/books2.png')}/>
+        )}
+
         <PageTitle>{book.title}</PageTitle>
         <SubTitle author={true}>Authors:</SubTitle>
         <SubTitle author={true}>{book.author}</SubTitle>

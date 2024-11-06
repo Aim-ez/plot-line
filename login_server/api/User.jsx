@@ -50,12 +50,13 @@ router.post('/createReview', (req, res) => {
 
 // Posts a book to the DB (NOTE: DOES NOT HAVE DATA CHECKS)
 router.post('/createBook', (req, res) => {
-    let {isbn, title, author, published, description} = req.body;
+    let {isbn, title, author, published, description, coverLink} = req.body;
     isbn = isbn;
     title = title.trim();
     author = author.trim();
     published = published.trim();
     description = description.trim();
+    coverLink = coverLink.trim();
 
     //Due to google books not having all info, just check that we have 
     //at least one metric to find the book by
@@ -71,6 +72,7 @@ router.post('/createBook', (req, res) => {
             author,
             published,
             description,
+            coverLink
         });
 
         newBook.save().then(result => {
@@ -413,7 +415,8 @@ router.get('/getBookData', async (req, res) => {
                 title: book.title,
                 author: book.author,
                 published: book.published,
-                description: book.description
+                description: book.description,
+                coverLink: book.coverLink
             }
         });
 

@@ -170,13 +170,15 @@ const ReviewGoogleBook = ({navigation, route}) => {
         const author = book.volumeInfo?.authors && book.volumeInfo.authors.length > 0 ? book.volumeInfo.authors.join(', ') : 'Unknown author';
         const description = book.volumeInfo?.description || 'No description available';
         const published = book.volumeInfo?.publishedDate || 'Unknown publication date';
+        const coverLink = book.volumeInfo.imageLinks?.thumbnail || '';
 
         bookData = {
             title, 
             isbn,
             author,
             description,
-            published
+            published,
+            coverLink
         }
 
         try{
