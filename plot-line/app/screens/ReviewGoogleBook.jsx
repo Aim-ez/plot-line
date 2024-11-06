@@ -64,9 +64,6 @@ const ReviewGoogleBook = ({navigation, route}) => {
     const [submitting, setSubmitting] = useState();
 
     const checkReviewExists = async (bookId) => {
-        console.log("UID:", _id)
-        console.log("BID:", bookId)
-
         try {
             const response = await axios.get(reviewexistsurl, {params:
                 {
@@ -76,10 +73,8 @@ const ReviewGoogleBook = ({navigation, route}) => {
             })
 
             if (response.data.status == 'NOT FOUND') {
-                console.log("There was no reviews found with tis book")
                 return false;
             } else if (response.data.status == 'FOUND') {
-                console.log("A review on this book was found")
                 return true;
             } else {
                 console.error('Error checking if review for book exists', response.data);
@@ -111,7 +106,6 @@ const ReviewGoogleBook = ({navigation, route}) => {
             if (bookId == 1) {
                 console.error('Something broke in book creation', response.data);
             } else {   
-                console.log("Bookid", bookId)
                 // check if user has already reviewed this book
                 const reviewExists = await checkReviewExists(bookId);
 
@@ -121,7 +115,7 @@ const ReviewGoogleBook = ({navigation, route}) => {
                 } else if (reviewExists == false) {
                     const response = await axios.post(reviewurl, formData)
                     const result = response.data;
-                    const {message, status, data} = result;
+                    const {message, status} = result;
 
                     if (status != 'SUCCESS') {
                         handleMessage(message, status);
@@ -177,8 +171,6 @@ const ReviewGoogleBook = ({navigation, route}) => {
         const description = book.volumeInfo?.description || 'No description available';
         const published = book.volumeInfo?.publishedDate || 'Unknown publication date';
 
-        console.log("isbn: ", isbn);
-
         bookData = {
             title, 
             isbn,
@@ -187,9 +179,6 @@ const ReviewGoogleBook = ({navigation, route}) => {
             published
         }
 
-    
-
-        console.log(bookData);
         try{
             const exists = await checkPlotBookExists(bookData);
 
@@ -206,7 +195,6 @@ const ReviewGoogleBook = ({navigation, route}) => {
                         return 1;
                 } else { 
                     console.log("BOOK CREATION SUCCESSFUL")
-                    console.log(data._id);
                     return (data._id);
                 }
             } else { //book exists, exists contains bookId

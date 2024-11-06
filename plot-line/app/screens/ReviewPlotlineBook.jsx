@@ -43,9 +43,9 @@ import {
 const {brand, darkLight, primary} = Colors;
 
 const ReviewPlotlineBook = ({navigation, route}) => {
-    const url = HostURL + "/user/createReview"
+    const reviewurl = HostURL + "/user/createReview"
+    const reviewexistsurl = HostURL + "/user/reviewExists"
     const { book } = route.params;
-    console.log("Book in review", book);
 
     const currentDate = new Date().toISOString();
 
@@ -53,65 +53,77 @@ const ReviewPlotlineBook = ({navigation, route}) => {
     //context -> will be important later
     const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
     const { _id } = storedCredentials;
-    const title = book?.volumeInfo.title || "No Title Available";  // Default title if missing
+    const title = book?.title || "No Title Available";  // Default title if missing
 
 
 
     const [message, setMessage] = useState();
     const [messageType, setMessageType] = useState();
     const [submitting, setSubmitting] = useState();
+
+    const checkReviewExists = async (bookId) => {
+        try {
+            const response = await axios.get(reviewexistsurl, {params:
+                {
+                    userId: _id,
+                    bookId: bookId
+                }
+            })
+
+            if (response.data.status == 'NOT FOUND') {
+                return false;
+            } else if (response.data.status == 'FOUND') {
+                return true;
+            } else {
+                console.error('Error checking if review for book exists', response.data);
+                return null; 
+            }
+        } catch (error) {
+            console.log(error);
+            handleMessage("An error occured. Check your network and try again.");
+        }
+    }
    
 
-    const handleCreateReview = (reviewInfo) => {
+    const handleCreateReview = async (reviewInfo) => {
         handleMessage(null); // Reset error message
         const {rating, description } = reviewInfo;
-
-        const bookk = createPlotlineBook(book)
 
         const formData = {
             rating,
             description,
             date: currentDate,
             userId: _id,
-            bookId: bookk //CHANGE ME BACK
+            bookId: book._id
         }
 
-        console.log("Book id received for create google review:", bookk);
+        try {     
+            // check if user has already reviewed this book
+            const reviewExists = await checkReviewExists(book._id);
 
+            if (reviewExists == true) {
+                handleMessage("You have already reviewed this book!", 'FAILED');
+                setSubmitting(false);
+            } else if (reviewExists == false) {
+                const response = await axios.post(reviewurl, formData)
+                const result = response.data;
+                const {message, status} = result;
 
-        /*
-        axios.post(url, formData)
-        .then((response) => {
-            const result = response.data;
-            const {message, status, data} = result;
-
-            if (status != 'SUCCESS') {
-                handleMessage(message, status);
-            } else { 
-                console.log("REVIEW CREATION SUCCESSFUL")
+                if (status != 'SUCCESS') {
+                    handleMessage(message, status);
+                    setSubmitting(false);
+                } else { 
+                    handleMessage("Review created. Check your profile to see your reviews!", 'SUCCESS')
+                    console.log("REVIEW CREATION SUCCESSFUL")
+                }
             }
-            setSubmitting(false);
-        }).catch(error => {
-            console.log(error);
-            setSubmitting(false);
-            handleMessage("An error occured. Check your network and try again.");
-        })
-            */
+        } catch (error) {
+                console.log(error);
+                setSubmitting(false);
+                handleMessage("An error occured. Check your network and try again.");
+            
+        }
     }
-
-    /*
-
-    const createPlotlineBook = (googleBook) => {
-        //title defined above, siince it was used for page title
-        const { book } = googleBook;
-        const isbn = 1; //industryindtifiers?
-        const author = book.volumeInfo.authors?.join(', ');
-        const description = book.volumeInfo.description;
-        const published = book.volumeInfo.publishedDate;
-
-    }
-        */
-
 
     const handleMessage = (message, type = 'FAILED') => {
         setMessage(message);
@@ -129,8 +141,9 @@ const ReviewPlotlineBook = ({navigation, route}) => {
                         <Formik
                             initialValues={{rating: '', description: ''}}
                             onSubmit={(values) => {
-                                if (Number.isNaN(values.rating)) {
-                                    handleMessage('You must enter a number for the rating.');
+                                const numericRating = Number(values.rating)
+                                if (!Number.isInteger(numericRating)) {
+                                    handleMessage('You must enter a number for the rating (Decimals not allowed).');
                                     setSubmitting(false);
                                 } else if (
                                     values.rating == '' || values.rating > 5 || values.rating < 1
@@ -168,11 +181,9 @@ const ReviewPlotlineBook = ({navigation, route}) => {
                                 </StyledButton>
                             )}
                             {submitting && (
-                                <StyledButton disabled={true}>
-                                     <Ionicons name={'ellipse-outline'} size={30} color={primary}/>
-                                </StyledButton>
+                                <Line />
                             )}
-                            <Line />
+                           
                         </StyledFormArea>)}
                         </Formik>
                     </InnerContainer>

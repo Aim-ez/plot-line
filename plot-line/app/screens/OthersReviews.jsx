@@ -41,9 +41,7 @@ function OthersReviews({route, navigation}) {
 
     async function getAllData() {
         const res = await axios.get(url, {params: {userId: userId}})
-            console.log(res.data);
-
-            setReviewData(res.data.data);
+        setReviewData(res.data.data);
     }
 
     useEffect(() => {
@@ -81,7 +79,6 @@ function OthersReviews({route, navigation}) {
         }
 
         const handlePress = () => {
-            console.log(bookData);
             navigation.navigate('BookDetails', { book: bookData, fromReview: true})
         }
 

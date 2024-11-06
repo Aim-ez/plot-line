@@ -261,7 +261,7 @@ router.post('/login', (req, res) => {
                 })
             }
         }).catch(err => {
-            console.log("Big test" + err)
+            console.log(err)
             res.json({
                 status: "FAILED",
                 message: "An error occured while checking for existing user."
@@ -386,6 +386,7 @@ router.get('/getBookData', async (req, res) => {
         res.json({
             status: "SUCCESS",
             data: {
+                _id: bookId,
                 isbn: book.isbn,
                 title: book.title,
                 author: book.author,

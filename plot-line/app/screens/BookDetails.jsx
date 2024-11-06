@@ -28,8 +28,6 @@ import {
 
 const BookDetails = ({ route, navigation }) => {
   const { book, fromReview } = route.params;
-  console.log("In book details: ", book);
-  console.log(fromReview)
 
   goToPlotReview = ({book}) => {
     navigation.navigate('ReviewPlotlineBook', { book: book })

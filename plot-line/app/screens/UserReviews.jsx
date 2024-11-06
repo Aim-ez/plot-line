@@ -43,8 +43,6 @@ function UserReviews({navigation}) {
     
     async function getAllData() {
         axios.get(url, {params: {userId:_id}}).then(res => {
-            console.log(res.data);
-
             setReviewData(res.data.data);
         });
     }
@@ -84,7 +82,6 @@ function UserReviews({navigation}) {
         }
 
         const handlePress = () => {
-            console.log(bookData);
             navigation.navigate('BookDetails', { book: bookData, fromReview: true})
         }
 

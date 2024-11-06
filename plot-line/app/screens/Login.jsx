@@ -71,7 +71,6 @@ const Login = ({navigation}) => {
                 handleMessage(message, status);
             } else {
                 console.log("LOGIN SUCESSFUL")
-                console.log(data[0])
                 persistLogin(data[0], message, status); // IF DOING GOOGLE SIGN IN, REWATCH KEEPING USER LOGGED IN
             }
             setSubmitting(false);
@@ -89,7 +88,6 @@ const Login = ({navigation}) => {
     }
 
     const persistLogin = (credentials, message, status) => {
-        console.log(credentials);
         AsyncStorage.setItem('plotlineCredentials', JSON.stringify(credentials))
         .then(() => {
             handleMessage(message, status);

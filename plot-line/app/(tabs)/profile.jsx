@@ -33,7 +33,6 @@ import { ScrollView } from 'react-native';
 
 const Profile = ({navigation}) => {
     const url = HostURL + "/user/profile";
-    console.log(url)
 
     //context -> will be important later
     const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
