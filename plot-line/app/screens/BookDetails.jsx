@@ -57,6 +57,10 @@ const BookDetails = ({ route, navigation }) => {
         <StyledButton onPress={() => goToGoogleReview({book: book})}>
           <ButtonText>I've Read This</ButtonText>
         </StyledButton>
+        <StyledButton onPress={() => navigation.navigate('GoogleBookReviews', {book: book})}>
+            <ButtonText>See Reviews</ButtonText>
+          </StyledButton>
+
         </InnerContainer>
       </InnerContainer>
   
@@ -71,11 +75,13 @@ const BookDetails = ({ route, navigation }) => {
         <SubTitle author={true}>Authors:</SubTitle>
         <SubTitle author={true}>{book.author}</SubTitle>
         <ExtraText>{book.description || "No description available."}</ExtraText>
-
-
        <StyledButton onPress={() => goToPlotReview({book:book})}>
           <ButtonText>I've Read This</ButtonText>
         </StyledButton>
+        <StyledButton onPress={() => navigation.navigate('PlotlineBookReviews', {book: book})}>
+          <ButtonText>See Reviews</ButtonText>
+        </StyledButton>
+
       </InnerContainer>
     )
   }
@@ -90,8 +96,7 @@ const BookDetails = ({ route, navigation }) => {
             renderGoogleBook()
           )}
 
-       <Line></Line>
-
+          <Line></Line>
         </StyledContainer>
 
     </ScrollView>

@@ -289,6 +289,24 @@ router.get('/getReviews', async(req, res) => {
     }
 });
 
+router.get('/getBookReviews', async(req,res) => {
+    let bookId = req.query.bookId;
+    
+    try {
+        const data=await Review.find({bookId})
+        res.json({
+            status: "SUCCESS", 
+            data: data
+        });
+    } catch (error) {
+        console.log(error)
+        res.json({
+            status: "FAILED",
+            message: "An error occured while fetching review data.",
+        })
+    }
+})
+
 // RETURN 'FOUND' IF BOOK ALREADY REVIEWED BY CURR USER
 // RETURN 'NOT FOUND' IF BOOK NOT REVIEWED YET BY CURR USER
 router.get('/reviewExists', async (req, res) => {
@@ -329,6 +347,10 @@ router.get('/reviewExists', async (req, res) => {
 router.get('/bookExists', async (req, res) => {
     const { title, isbn, author } = req.query;
 
+    console.log(title);
+    console.log(isbn);
+    console.log(author);
+    
     //All of these should match a book if it exists in our DB
     //INCLUDING IF ANY OF THEM ARE NULL
     try {
