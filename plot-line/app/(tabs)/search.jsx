@@ -32,10 +32,19 @@ import {
   StyledFormArea,
   StyledButton,
   ButtonText,
+  BookText,
   Line,
   WelcomeContainer,
   Avatar,
   SearchBar,
+  ReviewBox,
+  ExtraText,
+  AuthorText,
+  ModalContainer,
+  SectionTitle,
+  ModalInnerContainer,
+  FilterOption,
+  FilterText
 } from '../../components/styles';
 
 const Book = ({ 
@@ -95,13 +104,12 @@ const Search = ({navigation}) => {
     
 
   const renderBookItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.bookItem} 
+    <ReviewBox 
       onPress={() => navigation.navigate('BookDetails', { book: item, fromReview: false })}
     >
-      <Text style={styles.bookTitle}>{item.volumeInfo.title}</Text>
-      <Text style={styles.bookAuthor}>{item.volumeInfo.authors?.join(', ')}</Text>
-    </TouchableOpacity>
+      <BookText>{item.volumeInfo.title}</BookText>
+      <AuthorText>{item.volumeInfo.authors?.join(', ')}</AuthorText>
+    </ReviewBox>
   );
 
   const genres = [
@@ -125,17 +133,16 @@ const Search = ({navigation}) => {
         value={query}
         onChangeText={setQuery}
       />
-      <StyledButton onPress={() => setModalVisible(true)} style={styles.filterButton}>
-        <Text style={styles.buttonText}>Filter: {selectedGenre || 'None'}</Text>
+      <StyledButton onPress={() => setModalVisible(true)}>
+        <ButtonText>Filter: {selectedGenre || 'None'}</ButtonText>
       </StyledButton>
-      <StyledButton onPress={fetchBooks} style={styles.filterButton}>
-        <Text style={styles.buttonText}>Search</Text>
+      <StyledButton onPress={fetchBooks}>
+        <ButtonText>Search</ButtonText>
       </StyledButton>
       <FlatList
         data={books}
         keyExtractor={(item) => item.id}
         renderItem={renderBookItem}
-        style={styles.results}
       />
       
       {/* Filter Modal */}
@@ -145,58 +152,58 @@ const Search = ({navigation}) => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Filters</Text>
+        <ModalContainer>
+          <ModalInnerContainer>
+            <SubTitle style={styles.modalTitle}>Select Filters</SubTitle>
 
             {/* Genre Selection */}
-            <Text style={styles.sectionTitle}>Genre</Text>
+            <SectionTitle>Genre</SectionTitle>
             <FlatList
               data={genres}
               keyExtractor={(genre) => genre}
               renderItem={({ item: genre }) => (
-                <TouchableOpacity
+                <FilterOption
                   onPress={() => setSelectedGenre(genre)}
-                  style={[styles.optionButton, selectedGenre === genre && styles.selectedOption]}
+                  chosen={selectedGenre === genre}
                 >
-                  <Text style={styles.optionText}>{genre}</Text>
-                </TouchableOpacity>
+                  <FilterText chosen={selectedGenre === genre}>{genre}</FilterText>
+                </FilterOption>
               )}
               style={styles.genreList}
             />
 
             {/* Language Selection */}
-            <Text style={styles.sectionTitle}>Language</Text>
+            <SectionTitle>Language</SectionTitle>
             <View style={styles.selectionRow}>
-              <TouchableOpacity
+              <FilterOption
                 onPress={() => setSelectedLanguage('en')}
-                style={[styles.optionButton, selectedLanguage === 'en' && styles.selectedOption]}
+                chosen={selectedLanguage === 'en'}
               >
-                <Text style={styles.optionText}>English</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+                <FilterText chosen={selectedLanguage === 'en'}>English</FilterText>
+              </FilterOption>
+              <FilterOption
                 onPress={() => setSelectedLanguage('fr')}
-                style={[styles.optionButton, selectedLanguage === 'fr' && styles.selectedOption]}
+                chosen={selectedLanguage === 'fr'}
               >
-                <Text style={styles.optionText}>French</Text>
-              </TouchableOpacity>
+                <FilterText chosen={selectedLanguage === 'fr'}>French</FilterText>
+              </FilterOption>
             </View>
 
             {/* Sorting Selection */}
-            <Text style={styles.sectionTitle}>Sort By</Text>
+            <SectionTitle>Sort By</SectionTitle>
             <View style={styles.selectionRow}>
-              <TouchableOpacity
+              <FilterOption
                 onPress={() => setSortOrder('A-Z')}
-                style={[styles.optionButton, sortOrder === 'A-Z' && styles.selectedOption]}
+                chosen={sortOrder === 'A-Z'}
               >
-                <Text style={styles.optionText}>Alphabetically A-Z</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+                <FilterText chosen={sortOrder === 'A-Z'}>Alphabetically A-Z</FilterText>
+              </FilterOption>
+              <FilterOption
                 onPress={() => setSortOrder('Z-A')}
-                style={[styles.optionButton, sortOrder === 'Z-A' && styles.selectedOption]}
+                chosen={sortOrder === 'Z-A'}
               >
-                <Text style={styles.optionText}>Alphabetically Z-A</Text>
-              </TouchableOpacity>
+                <FilterText chosen={sortOrder === 'Z-A'}>Alphabetically Z-A</FilterText>
+              </FilterOption>
             </View>
 
             {/* Modal Buttons */}
@@ -224,8 +231,8 @@ const Search = ({navigation}) => {
               />
             </View>
 
-          </View>
-        </View>
+          </ModalInnerContainer>
+        </ModalContainer>
       </Modal>
     </StyledContainer>
   );
@@ -282,12 +289,6 @@ const styles = StyleSheet.create({
   },
   results: {
     marginTop: 20,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     width: '80%',

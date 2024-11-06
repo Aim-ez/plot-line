@@ -20,13 +20,15 @@ export const Colors = {
     secondary: '#E5E7EB',
     tertiary: '#1F2937',
     darkLight: '#9CA3AF',
+    lightGrey: '#d3d3d3',
     brand: '#6D28D9',
     back: '#EFEBF9',
     green: '#10B981',
     red: '#EF4444',
+    black: '#000'
 };
 
-const { back, primary, secondary, tertiary, darkLight, brand, green, red } = Colors;
+const { black, lightGrey, back, primary, secondary, tertiary, darkLight, brand, green, red } = Colors;
 
 export const StyledContainer = styled.View`
     flex: 1;
@@ -285,3 +287,54 @@ export const ReviewText = styled.Text`
         margin-top: 0px;
     `}
 `;
+
+export const BookText = styled.Text`
+        font-size: 18px;
+        font-weight: 800;
+
+`;
+
+export const AuthorText = styled.Text`
+        font-size: 14px;
+        color: ${tertiary}
+`
+
+export const ModalContainer = styled.View`
+        flex: 1;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.5);
+`
+
+export const ModalInnerContainer = styled.View`
+        width: 80%;
+        background-color: ${primary};
+        border-radius: 10px;
+        padding: 20px;
+`
+
+export const SectionTitle = styled.Text`
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 15px;
+`
+
+export const FilterOption = styled.TouchableOpacity`
+        padding: 10px;
+        background-color: ${lightGrey};
+        border-radius: 5px;
+        flex: 1;
+        margin-horizontal: 5px;
+
+    ${(props) => props.chosen == true && `
+        background-color: ${brand};
+    `}
+`
+
+export const FilterText = styled.Text`
+    text-align: center;
+    color: ${black};
+    ${(props) => props.chosen == true && `
+        color: ${primary};
+    `} 
+`
