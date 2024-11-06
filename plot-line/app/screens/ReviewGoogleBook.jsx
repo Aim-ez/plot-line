@@ -62,12 +62,41 @@ const ReviewGoogleBook = ({navigation, route}) => {
     const [message, setMessage] = useState();
     const [messageType, setMessageType] = useState();
     const [submitting, setSubmitting] = useState();
+
+    const checkReviewExists = async (bookId) => {
+        console.log("UID:", _id)
+        console.log("BID:", bookId)
+
+        try {
+            const response = await axios.get(reviewexistsurl, {params:
+                {
+                    userId: _id,
+                    bookId: bookId
+                }
+            })
+
+            if (response.data.status == 'NOT FOUND') {
+                console.log("There was no reviews found with tis book")
+                return false;
+            } else if (response.data.status == 'FOUND') {
+                console.log("A review on this book was found")
+                return true;
+            } else {
+                console.error('Error checking if review for book exists', response.data);
+                return null; 
+            }
+        } catch (error) {
+            console.log(error);
+            handleMessage("An error occured. Check your network and try again.");
+        }
+    }
    
 
     const handleCreateReview = async (reviewInfo) => {
         handleMessage(null); // Reset error message
         const {rating, description } = reviewInfo;
 
+        // get bookId to put review on
         const bookId = await createPlotlineBook()
 
         const formData = {
@@ -75,25 +104,32 @@ const ReviewGoogleBook = ({navigation, route}) => {
             description,
             date: currentDate,
             userId: _id,
-            bookId: bookId //CHANGE ME BACK
+            bookId: bookId 
         }
-
-        console.log("Book id received for create google review:", bookId);
 
         try {     
             if (bookId == 1) {
                 console.error('Something broke in book creation', response.data);
             } else {   
-                const response = await axios.post(reviewurl, formData)
-                const result = response.data;
-                const {message, status, data} = result;
+                console.log("Bookid", bookId)
+                // check if user has already reviewed this book
+                const reviewExists = await checkReviewExists(bookId);
 
-                if (status != 'SUCCESS') {
-                    handleMessage(message, status);
+                if (reviewExists == true) {
+                    handleMessage("You have already reviewed this book!", 'FAILED');
                     setSubmitting(false);
-                } else { 
-                    handleMessage("Review created. Check your profile to see your reviews!", 'SUCCESS')
-                    console.log("REVIEW CREATION SUCCESSFUL")
+                } else if (reviewExists == false) {
+                    const response = await axios.post(reviewurl, formData)
+                    const result = response.data;
+                    const {message, status, data} = result;
+
+                    if (status != 'SUCCESS') {
+                        handleMessage(message, status);
+                        setSubmitting(false);
+                    } else { 
+                        handleMessage("Review created. Check your profile to see your reviews!", 'SUCCESS')
+                        console.log("REVIEW CREATION SUCCESSFUL")
+                    }
                 }
             }
         } catch (error) {
@@ -205,8 +241,9 @@ const ReviewGoogleBook = ({navigation, route}) => {
                         <Formik
                             initialValues={{rating: '', description: ''}}
                             onSubmit={(values) => {
-                                if (Number.isNaN(values.rating)) {
-                                    handleMessage('You must enter a number for the rating.');
+                                const numericRating = Number(values.rating)
+                                if (!Number.isInteger(numericRating)) {
+                                    handleMessage('You must enter a number for the rating (Decimals not allowed).');
                                     setSubmitting(false);
                                 } else if (
                                     values.rating == '' || values.rating > 5 || values.rating < 1

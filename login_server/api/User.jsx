@@ -289,6 +289,41 @@ router.get('/getReviews', async(req, res) => {
     }
 });
 
+// RETURN 'FOUND' IF BOOK ALREADY REVIEWED BY CURR USER
+// RETURN 'NOT FOUND' IF BOOK NOT REVIEWED YET BY CURR USER
+router.get('/reviewExists', async (req, res) => {
+    const { userId, bookId } = req.query;
+
+    //All of these should match a book if it exists in our DB
+    //INCLUDING IF ANY OF THEM ARE NULL
+    try {
+        const review = await Review.findOne({
+            userId: userId,
+            bookId: bookId,
+        });
+
+        if (!review) {
+            //review not found
+            return res.status(201).json({
+               status: "NOT FOUND",
+            });
+        }
+
+        //review found
+        res.json({
+            status: "FOUND",
+        });
+    } catch (error) {
+        console.error(error);
+        res.json({
+            status: "FAILED",
+            message: "An error occurred while fetching book data."
+        });
+    }
+
+});
+
+
 // RETURN bookId IF BOOK WITH GIVEN DETAILS EXISTS
 // RETURN null IF BOOK WITH GIVEN DETAILS DOES NOT EXIST
 router.get('/bookExists', async (req, res) => {
