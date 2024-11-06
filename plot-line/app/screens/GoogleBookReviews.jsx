@@ -82,7 +82,7 @@ const GoogleBookReviews = ({route, navigation}) => {
                 //res.data.data contains book data
                 const plotBookInfo = res.data.data;
                 console.log("PlotBookInfo: ", plotBookInfo)
-                navigation.navigate('PlotlineBookReviews', {book: plotBookInfo})
+                navigation.replace('PlotlineBookReviews', {book: plotBookInfo})
             } else {
                 console.error('Error checking if plot book exists', response.data);
                 setError("An error occured. Check your network and try again.");
