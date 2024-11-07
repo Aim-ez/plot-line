@@ -92,6 +92,58 @@ router.post('/createBook', (req, res) => {
     }
 })
 
+// Posts a book to the DB
+router.post('/createManualBook', (req, res) => {
+    let { isbn, title, author, published, description, coverLink } = req.body;
+
+    // Check if fields exist and assign empty string if undefined or null
+    isbn = isbn ? isbn.trim() : "";
+    title = title ? title.trim() : "";
+    author = author ? author.trim() : "";
+    published = published ? published.trim() : "";
+    description = description ? description.trim() : "";
+    coverLink = coverLink ? coverLink.trim() : "";
+
+    // Ensure that at least one identifier is present
+    if (isbn === "" && title === "" && author === "") {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "At least one of ISBN, Title, or Author is required!"
+        });
+    }
+
+    // Create new book object
+    const newBook = new Book({
+        isbn,
+        title,
+        author,
+        published,
+        description,
+        coverLink
+    });
+
+    // Save the book to the database
+    newBook.save()
+        .then(result => {
+            console.log("BOOK ADD SUCCESSFUL");
+            return res.status(201).json({
+                status: "SUCCESS",
+                message: "Book added successfully!",
+                data: result // Send the book data back to the frontend
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            return res.status(500).json({
+                status: "FAILED",
+                message: "An error occurred while creating the book!"
+            });
+        });
+});
+
+
+
+
 // Signup
 router.post('/signup', (req, res) => {
     let {name, username, email, password} = req.body;
