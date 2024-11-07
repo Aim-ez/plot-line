@@ -342,3 +342,16 @@ export const FilterText = styled.Text`
         color: ${primary};
     `} 
 `
+
+export const PlusButton = styled.TouchableOpacity`
+    position: absolute;
+    top: 20;
+    right: 20px;
+    background-color: ${brand};
+    border-radius: 20px;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    zIndex: 1;
+`
