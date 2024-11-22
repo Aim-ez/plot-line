@@ -244,7 +244,7 @@ export const ExtraText = styled.Text`
             padding-horizontal: 15px;
             shadow-color: '#000';
             shadow-offset: {width: 0px; height: 2px;};
-            shadow-opacity: 0.2px;
+            shadow-opacity: 0.2;
             shadow-radius: 5px;
         `}
 `;
