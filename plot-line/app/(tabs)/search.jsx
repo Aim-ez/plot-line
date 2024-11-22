@@ -1,113 +1,94 @@
-// import { StyleSheet, Text, View } from 'react-native'
-// import React from 'react'
-
-// const Search = () => {
-//   return (
-//     <View>
-//       <Text>Search</Text>
-//     </View>
-//   )
-// }
-
-// export default Search
-
-// const styles = StyleSheet.create({})
-
-//figuring out commits
-import { StyleSheet, Button, Text, Modal, View, FlatList, TouchableOpacity } from 'react-native'
-import React, { useState, useContext } from 'react'
-
-// async storage
-import AsyncStorage  from '@react-native-async-storage/async-storage'
-
-// credntials context
-import { CredentialsContext } from '../../components/CredentialsContext.jsx'
-
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, FlatList, View, Modal, Button } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import {
   StyledContainer,
   InnerContainer,
-  PageLogo,
   PageTitle,
-  SubTitle,
-  StyledFormArea,
+  Line,
+  SearchBar,
   StyledButton,
   ButtonText,
-  BookText,
-  Line,
-  WelcomeContainer,
-  Avatar,
-  SearchBar,
   ReviewBox,
-  ExtraText,
+  BookText,
   AuthorText,
+  RightIcon,
   ModalContainer,
-  SectionTitle,
   ModalInnerContainer,
+  SubTitle,
+  SectionTitle,
   FilterOption,
   FilterText,
-  PlusButton,
 } from '../../components/styles';
 
-const Book = ({ 
-  id: '',
-  volumeInfo: {
-    title: '',
-    authors: [],
-  },
-});
-
-GOOGLE_BOOKS_API_KEY = 'AIzaSyA4Z1Qm7N2_6AnPLHOtS577y4-nV_NrAb8'
-
+const GOOGLE_BOOKS_API_KEY = 'AIzaSyA4Z1Qm7N2_6AnPLHOtS577y4-nV_NrAb8';
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
 
-const Search = ({navigation}) => {
+const genres = [
+  'ANTIQUES & COLLECTIBLES', 'LITERARY COLLECTIONS', 'ARCHITECTURE', 'LITERARY CRITICISM', 
+  'ART', 'MATHEMATICS', 'BIBLES', 'MEDICAL', 'BIOGRAPHY & AUTOBIOGRAPHY', 'MUSIC', 
+  // Add the rest of the genres here...
+];
+
+const Search = ({ navigation }) => {
   const [query, setQuery] = useState('');
   const [books, setBooks] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [sortOrder, setSortOrder] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
+
+  const nav = useNavigation();
+
+  useEffect(() => {
+    const unsubscribe = nav.addListener('tabPress', () => {
+      // Reset all state when the tab is pressed
+      setQuery('');
+      setBooks([]);
+      setSelectedGenre('');
+      setSelectedLanguage('');
+      setSortOrder('');
+      setHasSearched(false);
+    });
+
+    return unsubscribe; // Cleanup listener
+  }, [nav]);
 
   const fetchBooks = async () => {
     try {
       const genreQuery = selectedGenre ? `+subject:${selectedGenre}` : '';
       const languageQuery = selectedLanguage ? `&langRestrict=${selectedLanguage}` : '';
-      
-      // No orderBy in fetch call
+
       const response = await fetch(`${GOOGLE_BOOKS_API}?q=${query}${genreQuery}${languageQuery}&key=${GOOGLE_BOOKS_API_KEY}`);
-  
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-  
+      if (!response.ok) throw new Error('Network response was not ok');
+
       const data = await response.json();
       let fetchedBooks = data.items || [];
-  
-      // Sort books based on the sortOrder
+
+      // Apply sorting
       if (sortOrder === 'A-Z') {
         fetchedBooks.sort((a, b) => a.volumeInfo.title.localeCompare(b.volumeInfo.title));
       } else if (sortOrder === 'Z-A') {
         fetchedBooks.sort((a, b) => b.volumeInfo.title.localeCompare(a.volumeInfo.title));
       }
-  
+
       setBooks(fetchedBooks);
+      setHasSearched(true);
     } catch (error) {
       console.error('Error fetching books:', error);
     }
-  };  
-  
+  };
 
   const clearFilters = () => {
     setSelectedGenre('');
     setSelectedLanguage('');
     setSortOrder('');
   };
-    
 
   const renderBookItem = ({ item }) => (
-    <ReviewBox 
-      onPress={() => navigation.navigate('BookDetails', { book: item, fromReview: false })}
-    >
+    <ReviewBox onPress={() => navigation.navigate('BookDetails', { book: item, fromReview: false })}>
       <BookText>{item.volumeInfo.title}</BookText>
       <AuthorText>{item.volumeInfo.authors?.join(', ')}</AuthorText>
     </ReviewBox>
@@ -128,32 +109,41 @@ const Search = ({navigation}) => {
   return (
     <StyledContainer>
       <InnerContainer>
-        <PlusButton 
-          onPress={() => navigation.navigate('addManualBook')}
-        >
-          <ButtonText>+</ButtonText>
-        </PlusButton>
+        <RightIcon filter={true} onPress={() => setModalVisible(true)}>
+          <Ionicons name={'filter'} size={30} />
+        </RightIcon>
 
-        <PageLogo source={require('../../assets/images/PlotLogo.png')} />
+        <PageTitle>Search</PageTitle>
+        <Line />
+
         <SearchBar
           search={true}
           placeholder="Search for books or authors..."
           value={query}
           onChangeText={setQuery}
+          onSubmitEditing={fetchBooks} // Trigger fetchUser on "Enter" or "Done"
+          returnKeyType="search" // Customize the keyboard action button
         />
-        
-        <StyledButton wide={true} onPress={() => setModalVisible(true)}>
-          <ButtonText>Filter: {selectedGenre || 'None'}</ButtonText>
-        </StyledButton>
-        <StyledButton wide={true} onPress={fetchBooks}>
-          <ButtonText>Search</ButtonText>
-        </StyledButton>
-        <FlatList
-          data={books}
-          keyExtractor={(item) => item.id}
-          renderItem={renderBookItem}
-          style={styles.results}
-        />
+
+        <RightIcon search={true} onPress={fetchBooks}>
+          <Ionicons name={'search'} size={30} />
+        </RightIcon>
+
+        <InnerContainer>
+          <>
+            <FlatList
+              data={books}
+              keyExtractor={(item) => item.id}
+              renderItem={renderBookItem}
+              style={styles.results}
+            />
+            {hasSearched && (
+              <StyledButton onPress={() => navigation.navigate('addManualBook')}>
+                <ButtonText>Can't Find What You're Looking For?</ButtonText>
+              </StyledButton>
+            )}
+          </>
+        </InnerContainer>
       </InnerContainer>
 
       {/* Filter Modal */}
@@ -222,26 +212,25 @@ const Search = ({navigation}) => {
               <Button 
                 title="Apply Filters" 
                 onPress={() => {
-                  setModalVisible(false);  // Close the modal
-                  fetchBooks();            // Fetch books with the applied filters
+                  setModalVisible(false); // Close the modal
+                  fetchBooks();           // Fetch books with the applied filters
                 }} 
               />
               <Button 
                 title="Clear Filters" 
                 onPress={() => {
-                  clearFilters();          // Clear filters
-                  fetchBooks();            // Re-fetch books without filters
-                  setModalVisible(false);  // Close the modal
+                  clearFilters();         // Clear filters
+                  fetchBooks();           // Re-fetch books without filters
+                  setModalVisible(false); // Close the modal
                 }} 
                 color="orange" 
               />
               <Button 
                 title="Close" 
-                onPress={() => setModalVisible(false)} // Just close the modal without applying filters
+                onPress={() => setModalVisible(false)} // Just close the modal
                 color="grey" 
               />
             </View>
-
           </ModalInnerContainer>
         </ModalContainer>
       </Modal>
@@ -249,7 +238,6 @@ const Search = ({navigation}) => {
   );
 };
 
-// Add your styles here
 const styles = StyleSheet.create({
  
   container: {
@@ -347,6 +335,4 @@ const styles = StyleSheet.create({
     maxHeight: 150,
   },
 });
-
 export default Search;
-

@@ -152,6 +152,12 @@ router.post('/signup', (req, res) => {
     email = email.trim();
     password = password.trim();
 
+    //Make it so that all usernames and emails are stored as lowercase
+    //Therefore, ppl can't make an account @johndoe and @johnDoe
+    //Also can't make johndoe@gmail.com and JohnDoe@gmail.com, etc.
+    username = username.toLowerCase();
+    email = email.toLowerCase();
+
     //ensure sign up fields are valid
     if (name == "" || username == "" || email=="" || password=="") {
         res.json({
@@ -494,10 +500,10 @@ router.get('/getUserIdByUsername', async (req, res) => {
     }
 
     try {
-        // Find the user by username
-        const data = await User.findOne({ username: username });
+        // Find the user by username (case-insensitive)
+        const data = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
 
-        if (data == null) {
+        if (!data) {
             return res.status(404).json({
                 status: "FAILED",
                 message: "User not found"

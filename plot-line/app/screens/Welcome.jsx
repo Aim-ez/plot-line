@@ -14,27 +14,30 @@ import {
     WelcomeContainer,
     Avatar
 } from '../../components/styles';
+import { ScrollView } from 'react-native';
 
 const Welcome = ({navigation}) => {
     return (
-        <StyledContainer>
-            <StatusBar style="dark"/>
-                <InnerContainer>
-                    <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
-                    <PageTitle welcome={true}>Welcome to PlotLine</PageTitle>
-                    <SubTitle>Insert Witty Subtitle</SubTitle>
+        <ScrollView>
+            <StyledContainer>
+                <StatusBar style="dark"/>
+                    <InnerContainer>
+                        <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
+                        <PageTitle welcome={true}>Welcome to PlotLine</PageTitle>
+                        <SubTitle>Insert Witty Subtitle</SubTitle>
 
-                    <WelcomeContainer>
-                        <StyledFormArea>
-                            <Avatar resizeMode="cover" source={require('../../assets/images/books.png')}/>
-                            <Line />
-                            <StyledButton onPress={() => navigation.navigate('Login')}>
-                                <ButtonText>Get Started</ButtonText>
-                            </StyledButton>                            
-                        </StyledFormArea>
-                    </WelcomeContainer>
-                </InnerContainer>
-        </StyledContainer>
+                        <WelcomeContainer>
+                            <StyledFormArea>
+                                <Avatar resizeMode="cover" source={require('../../assets/images/books.png')}/>
+                                <Line />
+                                <StyledButton onPress={() => navigation.navigate('Login')}>
+                                    <ButtonText>Get Started</ButtonText>
+                                </StyledButton>                            
+                            </StyledFormArea>
+                        </WelcomeContainer>
+                    </InnerContainer>
+            </StyledContainer>
+        </ScrollView>
     );
 }
 

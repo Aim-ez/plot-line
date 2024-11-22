@@ -61,8 +61,14 @@ const Login = ({navigation}) => {
 
     const handleLogin = (credentials) => {
         handleMessage(null); // Reset error message
+
+            // Convert email to lowercase for case-insensitive comparison
+        const normalizedCredentials = {
+            ...credentials,
+            email: credentials.email.toLowerCase()
+        };
         
-        axios.post(url, credentials)
+        axios.post(url, normalizedCredentials)
         .then((response) => {
             const result = response.data;
             const {message, status, data} = result;
