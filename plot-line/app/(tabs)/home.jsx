@@ -47,13 +47,23 @@ const Home = ({navigation}) => {
 
     const fetchUser = async () => {
         setMessage(null);
+
+        if (!query.trim()) {
+            handleMessage('Please enter a username to search.');
+            return;
+        }
+    
+        // Normalize the query to lowercase for case-insensitive search
+        const normalizedQuery = query.toLowerCase();
+    
         try {
-            const res = await axios.get(url, { params: { username: query}})
-            navigation.navigate("OthersReviews", { userId: res.data.data._id, handle: query})
+            const res = await axios.get(url, { params: { username: normalizedQuery } });
+            navigation.navigate("OthersReviews", { userId: res.data.data._id, handle: query });
         } catch (error) {
             handleMessage(error);
         }
-    }
+    };
+    
 
     const handleMessage = (error, type = 'FAILED') => {
         const errorMessage = error?.response?.data?.message || error?.message || 'An unexpected error occurred';

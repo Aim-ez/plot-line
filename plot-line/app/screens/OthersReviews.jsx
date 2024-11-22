@@ -102,7 +102,7 @@ function OthersReviews({route, navigation}) {
             <StyledContainer>
             <StatusBar style="dark"/>
                 <InnerContainer>
-                    <PageTitle>@{handle}'s Reviews</PageTitle>
+                    <PageTitle>@{handle.toLowerCase()}'s Reviews</PageTitle>
                     <Line></Line>
                     {numberOfReviews > 0 ? (
                         <>

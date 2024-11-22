@@ -60,6 +60,13 @@ const Signup = ({navigation}) => {
 
     const handleSignup = (credentials) => {
         handleMessage(null); // Reset error message
+
+        // Normalize email and username for case-insensitivity
+        const normalizedCredentials = {
+            ...credentials,
+            email: credentials.email.toLowerCase(),
+            username: credentials.username.toLowerCase()
+        };
         
         axios.post(url, credentials)
         .then((response) => {
