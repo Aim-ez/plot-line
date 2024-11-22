@@ -121,6 +121,8 @@ const Search = ({ navigation }) => {
           placeholder="Search for books or authors..."
           value={query}
           onChangeText={setQuery}
+          onSubmitEditing={fetchBooks} // Trigger fetchUser on "Enter" or "Done"
+          returnKeyType="search" // Customize the keyboard action button
         />
 
         <RightIcon search={true} onPress={fetchBooks}>

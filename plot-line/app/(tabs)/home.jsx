@@ -83,6 +83,8 @@ const Home = ({navigation}) => {
                         placeholder="Search by username to see others' reviews!"
                         value={query}
                         onChangeText={setQuery}
+                        onSubmitEditing={fetchUser} // Trigger fetchUser on "Enter" or "Done"
+                        returnKeyType="search" // Customize the keyboard action button
                     />
                     <MsgBox type={messageType}>{message}</MsgBox>
 
