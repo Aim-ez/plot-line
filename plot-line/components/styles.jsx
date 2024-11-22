@@ -168,6 +168,16 @@ export const RightIcon = styled.TouchableOpacity`
     top:18px;
     position: absolute;
     z-index: 1;
+
+    ${(props) => props.filter == true && `
+        top: 20px;
+        right: 20px;
+        `}
+
+    ${(props) => props.search == true && `
+        top: 100px;
+        right: 20px;
+        `}
 `;
 
 export const StyledButton = styled.TouchableOpacity`
