@@ -62,9 +62,9 @@ const Profile = ({navigation}) => {
                     <InnerContainer>
 
                         <SubTitle>Your Reviews</SubTitle>
-                        <TextLink onPress={() => navigation.navigate("UserReviews")}>
-                            <TextLinkContent profile={true}>See Reviews</TextLinkContent>
-                        </TextLink>
+                        <StyledButton onPress={() => navigation.navigate("UserReviews")}>
+                            <ButtonText>See Reviews</ButtonText>
+                        </StyledButton>
 
                     </InnerContainer>
 
@@ -73,9 +73,9 @@ const Profile = ({navigation}) => {
                     <InnerContainer>
                         <SubTitle>Your Favourites</SubTitle>
                         <SubTitle profile={true}>Feature coming soon!</SubTitle>
-                        <TextLink>
-                            <TextLinkContent profile={true}>See Favourites</TextLinkContent>
-                        </TextLink>
+                        <StyledButton>
+                            <ButtonText>See Favourites</ButtonText>
+                        </StyledButton>
 
                     </InnerContainer>
 
