@@ -12,7 +12,7 @@ import { Formik } from 'formik';
 import { View, ScrollView } from 'react-native';
 
 // icons
-import { Octicons, Ionicons, Fontisto } from '@expo/vector-icons';
+import { Octicons, Ionicons } from '@expo/vector-icons';
 
 // keyboard avoid wrapper
 import KeyboardAvoidingWrapper from '../../components/KeyboardAvoidingWrapper';

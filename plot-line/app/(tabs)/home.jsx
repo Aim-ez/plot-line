@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import { StatusBar } from 'expo-status-bar'
 
 // Host URL
@@ -6,32 +6,20 @@ import { HostURL } from '../../constants/URL.ts'
 
 import axios from 'axios';
 
-// async storage
-import AsyncStorage  from '@react-native-async-storage/async-storage'
-
-// credntials context
-import { CredentialsContext } from '../../components/CredentialsContext.jsx'
-
 import {
     StyledContainer,
     InnerContainer,
     PageTitle,
     SubTitle,
-    StyledFormArea,
     StyledButton,
     ButtonText,
     Line,
-    WelcomeContainer,
     PageLogo,
-    TextLink,
-    TextLinkContent,
     SearchBar,
     MsgBox,
     HeaderImage
 } from '../../components/styles';
 import { ScrollView } from 'react-native';
-
-import OthersReviews from '../screens/OthersReviews.jsx'
 
 const Home = ({navigation}) => {
     const url = HostURL + "/user/getUserIDByUsername";
@@ -39,11 +27,6 @@ const Home = ({navigation}) => {
     const [message, setMessage] = useState();
     const [messageType, setMessageType] = useState();
     const [query, setQuery] = useState('')
-    const [userId, setUserId] = useState([])
-
-    //context -> will be important later
-    //const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
-    //const { name, username, email } = storedCredentials;
 
     const fetchUser = async () => {
         setMessage(null);

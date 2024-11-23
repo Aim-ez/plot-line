@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useContext} from 'react';
 import { StatusBar } from 'expo-status-bar';
 
 // async storage
@@ -12,11 +12,6 @@ import {
     InnerContainer,
     PageTitle,
     SubTitle,
-    StyledFormArea,
-    StyledButton,
-    ButtonText,
-    Line,
-    WelcomeContainer,
     PageLogo, 
     HeaderImage
 } from '../../components/styles';

@@ -1,15 +1,7 @@
-import React, {useContext} from 'react'
-import { Tabs, Redirect } from 'expo-router'
+import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Colors } from '@/components/styles.jsx'
 import { Ionicons } from '@expo/vector-icons'
-
-// async storage
-import AsyncStorage  from '@react-native-async-storage/async-storage'
-
-// credntials context
-import { CredentialsContext } from '../../components/CredentialsContext.jsx'
-
 
 // import Tab screens
 import HomeScreen from './home.jsx'

@@ -7,9 +7,6 @@ import { View, ScrollView } from 'react-native';
 // API Client
 import axios from 'axios';
 
-// async storage
-import AsyncStorage  from '@react-native-async-storage/async-storage'
-
 // credntials context
 import { CredentialsContext } from '../../components/CredentialsContext.jsx'
 
@@ -40,7 +37,7 @@ import {
 
 
 
-const {brand, darkLight, primary} = Colors;
+const {brand, darkLight } = Colors;
 
 const ReviewGoogleBook = ({navigation, route}) => {
     const reviewurl = HostURL + "/user/createReview"

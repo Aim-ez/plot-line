@@ -1,9 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import { StatusBar } from 'expo-status-bar'
 
-// async storage
-import AsyncStorage  from '@react-native-async-storage/async-storage'
-
 // credntials context
 import { CredentialsContext } from '../../components/CredentialsContext.jsx'
 
@@ -17,19 +14,13 @@ import {
     StyledContainer,
     InnerContainer,
     PageTitle,
-    SubTitle,
-    StyledFormArea,
-    StyledButton,
-    ButtonText,
     Line,
-    WelcomeContainer,
-    PageLogo,
     ReviewBox,
     ReviewText,
     ExtraText,
     
 } from '../../components/styles';
-import { ScrollView, FlatList } from 'react-native';
+import { FlatList } from 'react-native';
 
 function UserReviews({navigation}) {
     const url = HostURL + "/user/getReviews";

@@ -1,27 +1,16 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 
 
 import {
   StyledContainer,
   InnerContainer,
-  PageLogo,
   PageTitle,
   SubTitle,
-  StyledFormArea,
-  LeftIcon, 
-  RightIcon,
-  StyledInputLabel,
-  StyledTextInput,
   StyledButton,
   ButtonText,
-  Colors,
-  MsgBox,
   Line,
-  ExtraView,
   ExtraText,
-  TextLink,
-  TextLinkContent,
   BookCoverImage,
   HeaderImage,
 } from '../../components/styles';

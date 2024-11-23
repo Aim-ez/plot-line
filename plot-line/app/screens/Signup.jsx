@@ -1,7 +1,6 @@
 import React, {useState, useContext} from 'react';
 import { StatusBar } from 'expo-status-bar'
 
-//formik
 import { Formik } from 'formik';
 import { View, ScrollView } from 'react-native';
 

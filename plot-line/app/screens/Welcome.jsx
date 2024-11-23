@@ -13,7 +13,6 @@ import {
     ScreenImage,
 } from '../../components/styles';
 
-
 const Welcome = ({navigation}) => {
     const handlePress = () => {
         navigation.navigate('Login');
