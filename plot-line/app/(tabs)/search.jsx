@@ -95,10 +95,7 @@ const Search = ({ navigation }) => {
     </ReviewBox>
   );
 
-  const genres = [
-    'Fiction', 'Fantasy', 'Mystery', 'Thriller', 'Romance', 'Historical Fiction',
-    'Non-Fiction', 'Biography', 'Memoir', 'Essay', 'Self-help', 'Poetry'
-  ];
+  const genres = ['Fiction', 'Non-Fiction', 'Poetry', 'Fantasy'];
 
   return (
     <StyledContainer>
@@ -154,8 +151,9 @@ const Search = ({ navigation }) => {
             {/* Genre Selection */}
             <SectionTitle>Genre</SectionTitle>
             <FlatList
+              key={modalVisible ? 'open' : 'closed'}  // Force re-render on modal visibility change
               data={genres}
-              keyExtractor={(genre) => genre}
+              keyExtractor={(item, index) => index.toString()}
               renderItem={({ item: genre }) => (
                 <FilterOption
                   onPress={() => setSelectedGenre(genre)}
@@ -327,6 +325,7 @@ const styles = StyleSheet.create({
   },
   genreList: {
     maxHeight: 150,
+    paddingBottom: 10,
   },
 });
 export default Search;
