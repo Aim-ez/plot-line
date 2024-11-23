@@ -113,7 +113,8 @@ const ReviewPlotlineBook = ({navigation, route}) => {
                     handleMessage(message, status);
                     setSubmitting(false);
                 } else { 
-                    handleMessage("Review created. Check your profile to see your reviews!", 'SUCCESS')
+                    handleMessage("Review created succesfully!", 'SUCCESS')
+                    navigation.navigate('TabLayout')
                     console.log("REVIEW CREATION SUCCESSFUL")
                 }
             }

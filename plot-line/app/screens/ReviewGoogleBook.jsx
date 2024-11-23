@@ -123,6 +123,7 @@ const ReviewGoogleBook = ({navigation, route}) => {
                     } else { 
                         handleMessage("Review created. Check your profile to see your reviews!", 'SUCCESS')
                         console.log("REVIEW CREATION SUCCESSFUL")
+                        navigation.navigate('TabLayout')
                     }
                 }
             }
