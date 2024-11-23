@@ -165,6 +165,8 @@ const ReviewPlotlineBook = ({navigation, route}) => {
                                 onChangeText={handleChange('rating')}
                                 onBlur={handleBlur('rating')}
                                 value={values.rating}
+                                returnKeyType="done"
+                                onSubmitEditing={handleSubmit} // Submit the form
                             />
                             <MyTextInput 
                                 label="Review"
@@ -174,6 +176,8 @@ const ReviewPlotlineBook = ({navigation, route}) => {
                                 onChangeText={handleChange('description')}
                                 onBlur={handleBlur('description')}
                                 value={values.description}
+                                returnKeyType="done"
+                                onSubmitEditing={handleSubmit} // Submit the form
                             />
                             <MsgBox type={messageType}>{message}</MsgBox>
                             {!submitting && (

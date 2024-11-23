@@ -129,6 +129,8 @@ const AddBook = ({ navigation }) => {
                                         onChangeText={handleChange('author')}
                                         onBlur={handleBlur('author')}
                                         value={values.author}
+                                        returnKeyType="done"
+                                        onSubmitEditing={handleSubmit} // Submit the form
                                     />
                                     <View>
                                         <StyledInputLabel>Published Date</StyledInputLabel>
@@ -163,6 +165,8 @@ const AddBook = ({ navigation }) => {
                                         onChangeText={handleChange('description')}
                                         onBlur={handleBlur('description')}
                                         value={values.description}
+                                        returnKeyType="done"
+                                        onSubmitEditing={handleSubmit} // Submit the form
                                     />
                                     <MsgBox type={messageType}>{message}</MsgBox>
                                     {!submitting && (

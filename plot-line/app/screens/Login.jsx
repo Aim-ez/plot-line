@@ -148,6 +148,8 @@ const Login = ({navigation}) => {
                                 isPassword={true}
                                 hidePassword={hidePassword}
                                 setHidePassword={setHidePassword}
+                                returnKeyType="done"
+                                onSubmitEditing={handleSubmit} // Submit the form
                             />
                             <MsgBox type={messageType}>{message}</MsgBox>
                             {!submitting && (
