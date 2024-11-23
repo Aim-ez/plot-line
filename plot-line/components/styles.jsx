@@ -35,7 +35,11 @@ export const StyledContainer = styled.View`
     padding: 5px;
     padding-top: ${StatusBarHeight + 10}px;
     background-color: ${back};
-    padding-bottom: 0px;
+    padding-bottom: 10px;
+
+    ${(props) => props.welcome && `
+        padding-bottom: 40px;
+    `}
 
     ${(props) => props.home && `
         margin-top: 0px;
@@ -85,7 +89,7 @@ export const BookCoverImage = styled.Image`
     resize-mode: contain;
 `;
 
-export const Avatar = styled.Image`
+export const ScreenImage = styled.Image`
     width: 400px;
     height: 400px;
     margin: auto;
@@ -190,7 +194,7 @@ export const StyledButton = styled.TouchableOpacity`
     height: 60px;
 
     ${(props) => props.wide == true && `
-        width: 100%;
+        width: 300px;
         `}
 
     ${(props) => props.google == true && `

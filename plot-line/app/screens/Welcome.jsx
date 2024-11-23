@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import { StatusBar } from 'expo-status-bar'
+import React from 'react';
+import { ScrollView } from 'react-native';
 
 import {
     StyledContainer,
@@ -7,33 +7,32 @@ import {
     PageLogo,
     PageTitle,
     SubTitle,
-    StyledFormArea,
     StyledButton,
     ButtonText,
     Line,
     WelcomeContainer,
-    Avatar
+    ScreenImage,
 } from '../../components/styles';
-import { ScrollView } from 'react-native';
+
 
 const Welcome = ({navigation}) => {
+    const handlePress = () => {
+        navigation.navigate('Login');
+    }
+
     return (
         <ScrollView>
-            <StyledContainer>
-                <StatusBar style="dark"/>
+            <StyledContainer welcome={true}>
                     <InnerContainer>
                         <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
                         <PageTitle welcome={true}>Welcome to PlotLine</PageTitle>
                         <SubTitle>Insert Witty Subtitle</SubTitle>
 
                         <WelcomeContainer>
-                            <StyledFormArea>
-                                <Avatar resizeMode="cover" source={require('../../assets/images/books.png')}/>
-                                <Line />
-                                <StyledButton onPress={() => navigation.navigate('Login')}>
+                                <ScreenImage source={require('../../assets/images/books.png')}/>
+                                <StyledButton wide={true} onPress={handlePress}>
                                     <ButtonText>Get Started</ButtonText>
                                 </StyledButton>                            
-                            </StyledFormArea>
                         </WelcomeContainer>
                     </InnerContainer>
             </StyledContainer>
