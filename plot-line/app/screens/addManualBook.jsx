@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Formik } from 'formik';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Text } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { HostURL } from '../../constants/URL.ts';
@@ -27,6 +28,10 @@ const AddBook = ({ navigation }) => {
     const [message, setMessage] = useState(null);
     const [messageType, setMessageType] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    
+    const [date, setDate] = useState(new Date());
+    const [show, setShow] = useState(false);
+    const [mode, setMode] = useState('date');
 
     const createBook = async (values) => {
         // Create the book data from the form values
@@ -34,7 +39,7 @@ const AddBook = ({ navigation }) => {
             isbn: values.isbn,
             title: values.title,
             author: values.author,
-            published: values.published === 'Unknown publication date' ? null : values.published,  // Set to null if it's "Unknown publication date"
+            published: values.published === 'Unknown publication date' ? null : values.published,
             description: values.description || 'No description available',
             coverLink:  ''
         };
@@ -47,14 +52,15 @@ const AddBook = ({ navigation }) => {
             const { message, status, data } = result;
 
             if (status !== 'SUCCESS') {
-                setMessage(message);
+                // setMessage(message);
+                setMessage(result.message);
                 setMessageType('FAILED');
             } else {
                 setMessage("Book added successfully!");
                 setMessageType('SUCCESS');
-                console.log(bookData);
+                // console.log(bookData);
                 // Navigate to review screen after book is added
-                navigation.navigate('ReviewPlotlineBook', { book: data });
+                navigation.navigate('ReviewPlotlineBook', { book: result.data });
             }
         } catch (error) {
             console.error(error);
@@ -68,6 +74,14 @@ const AddBook = ({ navigation }) => {
         setMessage(message);
         setMessageType(type);
     };
+
+    const handleDateChange = (event, selectedDate) => {
+        setShow(false); // Hide the picker after selection
+        if (selectedDate) {
+            setDate(selectedDate);
+        }
+    };
+
 
     return (
         <KeyboardAvoidingWrapper>
@@ -116,15 +130,31 @@ const AddBook = ({ navigation }) => {
                                         onBlur={handleBlur('author')}
                                         value={values.author}
                                     />
-                                    <MyTextInput
-                                        label="Published Date"
-                                        icon="calendar"
-                                        placeholder="Enter published date (optional)"
-                                        placeholderTextColor={darkLight}
-                                        onChangeText={handleChange('published')}
-                                        onBlur={handleBlur('published')}
-                                        value={values.published}
-                                    />
+                                    <View>
+                                        <StyledInputLabel>Published Date</StyledInputLabel>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            {/* Calendar Icon with Grey Background */}
+                                            <LeftIcon>
+                                                <Ionicons name="calendar" size={30} color={brand} />
+                                            </LeftIcon>
+                                            {/* Date Input */}
+                                            <TouchableOpacity
+                                                style={{ flex: 1 }}
+                                                onPress={() => {
+                                                    setShow(true); // Show the date picker
+                                                    setMode('date');
+                                                }}
+                                            >
+                                                <StyledTextInput
+                                                    placeholder="Select a date"
+                                                    placeholderTextColor={darkLight}
+                                                    value={values.published || date.toISOString().split('T')[0]} // Format to YYYY-MM-DD
+                                                    editable={false} // Prevent manual editing
+                                                />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
                                     <MyTextInput
                                         label="Description"
                                         icon="document-text"
@@ -143,13 +173,30 @@ const AddBook = ({ navigation }) => {
                                     {submitting && <Line />}
                                 </StyledFormArea>
                             )}
-                        </Formik>
+                       </Formik>
                     </InnerContainer>
                 </ScrollView>
             </StyledContainer>
+            {/* DateTimePicker */}
+            {show && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={date}
+                    mode={mode}
+                    is24Hour={true}
+                    onChange={(event, selectedDate) => {
+                        setShow(false);
+                        if (selectedDate) {
+                            setDate(selectedDate);
+                            setFieldValue('published', selectedDate.toISOString().split('T')[0]); // Update Formik field
+                        }
+                    }}
+                />
+            )}
         </KeyboardAvoidingWrapper>
     );
 };
+
 
 const MyTextInput = ({ label, icon, ...props }) => {
     return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, FlatList, View, Modal, Button } from 'react-native';
+import { StyleSheet, FlatList, View, Modal, Button, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -25,20 +25,17 @@ import {
 const GOOGLE_BOOKS_API_KEY = 'AIzaSyA4Z1Qm7N2_6AnPLHOtS577y4-nV_NrAb8';
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
 
-const genres = [
-  'ANTIQUES & COLLECTIBLES', 'LITERARY COLLECTIONS', 'ARCHITECTURE', 'LITERARY CRITICISM', 
-  'ART', 'MATHEMATICS', 'BIBLES', 'MEDICAL', 'BIOGRAPHY & AUTOBIOGRAPHY', 'MUSIC', 
-  // Add the rest of the genres here...
-];
-
 const Search = ({ navigation }) => {
   const [query, setQuery] = useState('');
   const [books, setBooks] = useState([]);
+  const [resultsPerPage] = useState(35); // Set results per page to 35
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [sortOrder, setSortOrder] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  const [totalResults, setTotalResults] = useState(0); // Add this line
+
 
   const nav = useNavigation();
 
@@ -60,12 +57,17 @@ const Search = ({ navigation }) => {
     try {
       const genreQuery = selectedGenre ? `+subject:${selectedGenre}` : '';
       const languageQuery = selectedLanguage ? `&langRestrict=${selectedLanguage}` : '';
+      const url = `${GOOGLE_BOOKS_API}?q=${query}${genreQuery}${languageQuery}&key=${GOOGLE_BOOKS_API_KEY}&maxResults=${resultsPerPage}`;
 
-      const response = await fetch(`${GOOGLE_BOOKS_API}?q=${query}${genreQuery}${languageQuery}&key=${GOOGLE_BOOKS_API_KEY}`);
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Network response was not ok');
 
       const data = await response.json();
       let fetchedBooks = data.items || [];
+
+      setBooks(fetchedBooks);
+      setTotalResults(data.totalItems || 0);
+      setHasSearched(true);
 
       // Apply sorting
       if (sortOrder === 'A-Z') {
@@ -73,9 +75,6 @@ const Search = ({ navigation }) => {
       } else if (sortOrder === 'Z-A') {
         fetchedBooks.sort((a, b) => b.volumeInfo.title.localeCompare(a.volumeInfo.title));
       }
-
-      setBooks(fetchedBooks);
-      setHasSearched(true);
     } catch (error) {
       console.error('Error fetching books:', error);
     }
@@ -87,6 +86,8 @@ const Search = ({ navigation }) => {
     setSortOrder('');
   };
 
+  const handleSearch = () => fetchBooks(); // Trigger fetchBooks when search is submitted
+
   const renderBookItem = ({ item }) => (
     <ReviewBox onPress={() => navigation.navigate('BookDetails', { book: item, fromReview: false })}>
       <BookText>{item.volumeInfo.title}</BookText>
@@ -94,17 +95,7 @@ const Search = ({ navigation }) => {
     </ReviewBox>
   );
 
-  const genres = [
-    'ANTIQUES & COLLECTIBLES', 'LITERARY COLLECTIONS', 'ARCHITECTURE', 'LITERARY CRITICISM', 'ART', 
-    'MATHEMATICS', 'BIBLES', 'MEDICAL', 'BIOGRAPHY & AUTOBIOGRAPHY', 'MUSIC', 'BODY, MIND & SPIRIT', 
-    'NATURE', 'BUSINESS & ECONOMICS', 'PERFORMING ARTS', 'COMICS & GRAPHIC NOVELS', 'PETS', 'COMPUTERS', 
-    'PHILOSOPHY', 'COOKING', 'PHOTOGRAPHY', 'CRAFTS & HOBBIES', 'POETRY', 'DESIGN', 'POLITICAL SCIENCE', 
-    'DRAMA', 'PSYCHOLOGY', 'EDUCATION', 'REFERENCE', 'FAMILY & RELATIONSHIPS', 'RELIGION', 'FICTION', 
-    'SCIENCE', 'FOREIGN LANGUAGE STUDY', 'SELF-HELP', 'GAMES & ACTIVITIES', 'SOCIAL SCIENCE', 'GARDENING', 
-    'SPORTS & RECREATION', 'HEALTH & FITNESS', 'STUDY AIDS', 'HISTORY', 'TECHNOLOGY & ENGINEERING', 'HOUSE & HOME', 
-    'TRANSPORTATION', 'HUMOR', 'TRAVEL', 'JUVENILE FICTION', 'TRUE CRIME', 'JUVENILE NONFICTION', 'YOUNG ADULT FICTION', 
-    'LANGUAGE ARTS & DISCIPLINES', 'YOUNG ADULT NONFICTION', 'CHILDREN\'S BOOKS'
-  ];
+  const genres = ['Fiction', 'Non-Fiction', 'Poetry', 'Fantasy'];
 
   return (
     <StyledContainer>
@@ -121,11 +112,11 @@ const Search = ({ navigation }) => {
           placeholder="Search for books or authors..."
           value={query}
           onChangeText={setQuery}
-          onSubmitEditing={fetchBooks} // Trigger fetchUser on "Enter" or "Done"
+          onSubmitEditing={handleSearch} // Trigger fetchBooks on "Enter" or "Done"
           returnKeyType="search" // Customize the keyboard action button
         />
 
-        <RightIcon search={true} onPress={fetchBooks}>
+        <RightIcon search={true} onPress={handleSearch}>
           <Ionicons name={'search'} size={30} />
         </RightIcon>
 
@@ -160,8 +151,9 @@ const Search = ({ navigation }) => {
             {/* Genre Selection */}
             <SectionTitle>Genre</SectionTitle>
             <FlatList
+              key={modalVisible ? 'open' : 'closed'}  // Force re-render on modal visibility change
               data={genres}
-              keyExtractor={(genre) => genre}
+              keyExtractor={(item, index) => index.toString()}
               renderItem={({ item: genre }) => (
                 <FilterOption
                   onPress={() => setSelectedGenre(genre)}
@@ -333,6 +325,7 @@ const styles = StyleSheet.create({
   },
   genreList: {
     maxHeight: 150,
+    paddingBottom: 10,
   },
 });
 export default Search;
