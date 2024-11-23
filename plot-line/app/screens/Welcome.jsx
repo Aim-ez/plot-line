@@ -9,7 +9,6 @@ import {
     SubTitle,
     StyledButton,
     ButtonText,
-    Line,
     WelcomeContainer,
     ScreenImage,
 } from '../../components/styles';
