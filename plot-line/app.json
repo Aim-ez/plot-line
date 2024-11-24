@@ -5,7 +5,6 @@
     "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "userInterfaceStyle": "automatic",
     "packagerOpts": {
       "sourceExts": ["js", "jsx", "ts", "tsx"]
     },
@@ -24,18 +23,6 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.aimez.plotline"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "scheme": "myGoogleApp",
-    "plugins": [
-      "expo-router"
-    ],
-    "experiments": {
-      "typedRoutes": true
     },
     "extra": {
       "eas": {
