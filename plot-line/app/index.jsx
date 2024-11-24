@@ -1,55 +1,46 @@
 import React, { useState, useEffect } from 'react';
-
-// React navigation stack
-import RootStack from '../navigators/RootStack';
-
-// async-storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SplashScreen from 'expo-splash-screen';
 
-// credentials context
+import RootStack from '../navigators/RootStack';
 import { CredentialsContext } from '../components/CredentialsContext';
 
-// SplashScreen from expo-splash-screen
-import * as SplashScreen from 'expo-splash-screen';
 
 export default function App() {
   const [appReady, setAppReady] = useState(false);
   const [storedCredentials, setStoredCredentials] = useState(null);
 
-  // Check if there are stored credentials
-  const checkLoginCredentials = async () => {
+  // Load stored credentials from AsyncStorage
+  const loadCredentials = async () => {
     try {
       const result = await AsyncStorage.getItem('plotlineCredentials');
-      if (result !== null) {
-        setStoredCredentials(JSON.parse(result));
-      } else {
-        setStoredCredentials(null);
-      }
+      setStoredCredentials(result ? JSON.parse(result) : null);
     } catch (error) {
       console.error('Error loading credentials from AsyncStorage:', error);
-      setStoredCredentials(null); // Fallback to null if there’s an error
+      setStoredCredentials(null); // Set to null in case of error
     }
   };
 
   // Show the splash screen until app is ready
   useEffect(() => {
-    const prepare = async () => {
+    const prepareApp = async () => {
       try {
         await SplashScreen.preventAutoHideAsync(); // Prevent splash screen from hiding
-        await checkLoginCredentials(); // Wait for data to load
+        await loadCredentials(); // Wait for credentials to load
       } catch (e) {
         console.warn(e);
       } finally {
-        setAppReady(true); // App is ready to be displayed
+        setAppReady(true); // Set app to ready
         SplashScreen.hideAsync(); // Hide the splash screen
       }
     };
 
-    prepare(); // Run the preparation code when app starts
+    prepareApp(); // Run the preparation code when app starts
   }, []);
 
+  // Don't render anything until app is ready
   if (!appReady) {
-    return null; // You don't need to return anything while the app is loading
+    return null; 
   }
 
   return (
