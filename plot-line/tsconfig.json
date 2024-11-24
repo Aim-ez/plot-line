@@ -12,7 +12,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "app/context/AuthContext.jsx", "app/(tabs)/profile.jsx"  ]
+    "app/context/AuthContext.jsx",
+    "app/(tabs)/profile.jsx"
+  ]
 }

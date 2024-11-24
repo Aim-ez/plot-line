@@ -24,6 +24,7 @@
       },
       "package": "com.aimez.plotline"
     },
+    "scheme": "com.aimez.plotline",
     "extra": {
       "eas": {
         "projectId": "7aad7c22-f041-4d6b-b226-b9a937cfb509"
