@@ -1,11 +1,8 @@
 import React, { useEffect, useState} from 'react';
-import { StatusBar } from 'expo-status-bar'
-
-// Host URL
-import { HostURL } from '../../constants/URL.ts'
-
-// API client
+import { FlatList } from 'react-native';
 import axios from 'axios';
+
+import { HostURL } from '../../constants/URL.ts'
 
 import {
     StyledContainer,
@@ -15,41 +12,33 @@ import {
     ReviewBox,
     ReviewText,
     ExtraText,
-    
 } from '../../components/styles';
-import { FlatList } from 'react-native';
+import { formatDate } from '../../hooks/formatDate.js';
 
-function PlotlineBookReviews({route, navigation}) {
+
+function PlotlineBookReviews({route}) {
     const { book } = route.params;
     const bookId = book._id;
 
     const url = HostURL + "/user/getBookReviews";
-    const bookurl = HostURL + "/user/getBookData";
 
     const [allReviewData, setReviewData] = useState([]);
 
-    async function getAllData() {
-        const res = await axios.get(url, {params: {bookId: bookId}})
-        setReviewData(res.data.data);
-    }
+    const getAllData = async () => {
+        try {
+            const res = await axios.get(url, { params: { bookId } });
+            setReviewData(res.data.data);
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        }
+    };
 
     useEffect(() => {
         getAllData(); 
     }, [bookId]);
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed, so add 1
-        const day = String(date.getDate()).padStart(2, '0');
-
-        return `${year}-${month}-${day}`; // Example: '2024-11-04'
-    }
-
     const Rev = ({ review }) => {
-
         return (
-            <>
             <ReviewBox disabled={true}>
                 <ReviewText date={true}>{formatDate(review.date)}</ReviewText>
                 <ReviewText>Book: {book.title}</ReviewText>
@@ -57,7 +46,6 @@ function PlotlineBookReviews({route, navigation}) {
                 <ReviewText>Rating: {review.rating}</ReviewText>
                 <ReviewText>"{review.description}"</ReviewText>
             </ReviewBox>
-            </>
         )
     };
 
@@ -66,7 +54,6 @@ function PlotlineBookReviews({route, navigation}) {
 
     return (
             <StyledContainer>
-            <StatusBar style="dark"/>
                 <InnerContainer>
                     <PageTitle>Reviews for {book.title}</PageTitle>
                     <Line></Line>
@@ -77,14 +64,11 @@ function PlotlineBookReviews({route, navigation}) {
                             data={allReviewData}
                             keyExtractor={item => item._id}
                             renderItem={({item}) => (<Rev review={item}/>)}
-                        />
+                            />
                         </>
                     ) : (
                         <ExtraText>{book.title} doesn't have any reviews yet!</ExtraText>
                     )}
-
-                   
-
                 </InnerContainer>
             </StyledContainer>
     );

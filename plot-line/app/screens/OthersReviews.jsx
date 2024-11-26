@@ -1,11 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import { StatusBar } from 'expo-status-bar'
-
-// Host URL
-import { HostURL } from '../../constants/URL.ts'
-
-// API client
+import { FlatList } from 'react-native';
 import axios from 'axios';
+
+import { HostURL } from '../../constants/URL.ts'
 
 import {
     StyledContainer,
@@ -15,9 +13,8 @@ import {
     ReviewBox,
     ReviewText,
     ExtraText,
-    
 } from '../../components/styles';
-import { FlatList } from 'react-native';
+import { formatDate } from '../../hooks/formatDate.js';
 
 function OthersReviews({route, navigation}) {
     const { userId, handle } = route.params;
@@ -27,23 +24,19 @@ function OthersReviews({route, navigation}) {
 
     const [allReviewData, setReviewData] = useState([]);
 
-    async function getAllData() {
-        const res = await axios.get(url, {params: {userId: userId}})
-        setReviewData(res.data.data);
-    }
+    const getAllData = async () => {
+        try {
+            const res = await axios.get(url, { params: { userId } });
+            setReviewData(res.data.data);
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        }
+    };
 
     useEffect(() => {
         getAllData(); 
     }, [userId]);
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed, so add 1
-        const day = String(date.getDate()).padStart(2, '0');
-
-        return `${year}-${month}-${day}`; // Example: '2024-11-04'
-    }
 
     const Rev = ({ review }) => {
         const [bookData, setBookData] = useState(null);
@@ -71,7 +64,6 @@ function OthersReviews({route, navigation}) {
         }
 
         return (
-            <>
             <ReviewBox onPress={handlePress}>
                 <ReviewText date={true}>{formatDate(review.date)}</ReviewText>
                 <ReviewText>Book: {bookData.title}</ReviewText>
@@ -79,7 +71,6 @@ function OthersReviews({route, navigation}) {
                 <ReviewText>Rating: {review.rating}</ReviewText>
                 <ReviewText>"{review.description}"</ReviewText>
             </ReviewBox>
-            </>
         )
     };
 
@@ -104,9 +95,6 @@ function OthersReviews({route, navigation}) {
                     ) : (
                         <ExtraText>@{handle} doesn't have any reviews yet!</ExtraText>
                     )}
-
-                   
-
                 </InnerContainer>
             </StyledContainer>
     );

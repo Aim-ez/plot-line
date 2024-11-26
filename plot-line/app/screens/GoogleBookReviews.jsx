@@ -1,26 +1,10 @@
-import React, {useEffect, useState} from 'react';
-
-// Host URL
-import { HostURL } from '../../constants/URL.ts'
-
-// API client
+import {useEffect, useState} from 'react';
 import axios from 'axios';
 
-import {
-    StyledContainer,
-    InnerContainer,
-    ExtraText,
-    
-} from '../../components/styles';
+import { HostURL } from '../../constants/URL.ts'
 
-/*
-Basically, we have to take in the Google book, and determine if it
-has an equivalent plotline book. 
-If it does:
-    -> Get the Plotline book information, pass to PlotlineBookReviews
-If it doesn't:
-    -> Display 'No reviews yet!'
-*/
+import { renderReviewMessage } from '../../components/ReviewMessage.jsx';
+
 
 const GoogleBookReviews = ({route, navigation}) => {
     const { book } = route.params;
@@ -28,10 +12,9 @@ const GoogleBookReviews = ({route, navigation}) => {
     const existsurl = HostURL + "/user/bookExists";
     const getbookurl = HostURL + "/user/getBookData";
 
-    const [ bookToSend, setBookToSend ] = useState();
     const [ loading, setLoading ] = useState(true);
     const [ error, setError ] = useState(null);
-    const [reviews, setReviews ] = useState(null);
+    const [ reviews, setReviews ] = useState(null);
 
     const checkPlotBookExists= async () => {
         const title = book.volumeInfo.title;
@@ -51,19 +34,11 @@ const GoogleBookReviews = ({route, navigation}) => {
             })
 
             if (response.data.status == 'NOT FOUND') {
-                setReviews(
-                    <StyledContainer>
-                    <InnerContainer>
-                    <ExtraText>This book doesn't have any reviews yet!</ExtraText>
-                    </InnerContainer>
-                    </StyledContainer>
-                );
+                setReviews(renderReviewMessage("This book doesn't have any reviews yet!"));
             } else if (response.data.status == 'FOUND') {
                 const bookId = response.data.data.bookId
                 const res = await axios.get(getbookurl, {params: {bookId: bookId}})
-                //res.data.data contains book data
                 const plotBookInfo = res.data.data;
-                console.log("PlotBookInfo: ", plotBookInfo)
                 navigation.replace('PlotlineBookReviews', {book: plotBookInfo})
             } else {
                 console.error('Error checking if plot book exists', response.data);
@@ -82,23 +57,11 @@ const GoogleBookReviews = ({route, navigation}) => {
     }, []);
 
     if (loading) {
-        return (
-            <StyledContainer>
-                <InnerContainer>
-                    <ExtraText>Loading...</ExtraText>
-                </InnerContainer>
-            </StyledContainer>
-        );
+        renderReviewMessage("Loading...")
     }
 
     if (error) {
-        return (
-            <StyledContainer>
-                <InnerContainer>
-                    <ExtraText>{error}</ExtraText>
-                </InnerContainer>
-            </StyledContainer>
-        );
+        renderReviewMessage({error});
     }
 
     return reviews;

@@ -14,6 +14,7 @@ import {
     ReviewText,
     ExtraText,
 } from '../../components/styles';
+import { formatDate } from '../../hooks/formatDate';
 
 const UserReviews = ({ navigation }) => {
     const reviewsUrl = `${HostURL}/user/getReviews`;
@@ -41,12 +42,6 @@ const UserReviews = ({ navigation }) => {
     useEffect(() => {
         fetchReviews();
     }, [fetchReviews]);
-
-    // Format date
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toISOString().split('T')[0]; // Example: '2024-11-04'
-    };
 
     // Render a single review
     const ReviewItem = ({ review }) => {
