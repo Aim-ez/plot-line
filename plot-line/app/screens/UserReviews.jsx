@@ -1,14 +1,9 @@
-import React, {useContext, useEffect, useState} from 'react';
-import { StatusBar } from 'expo-status-bar'
-
-// credntials context
-import { CredentialsContext } from '../../components/CredentialsContext.jsx'
-
-// Host URL
-import { HostURL } from '../../constants/URL.ts'
-
-// API client
+import React, { useContext, useEffect, useState, useCallback } from 'react';
+import { FlatList } from 'react-native';
 import axios from 'axios';
+
+import { CredentialsContext } from '../../components/CredentialsContext';
+import { HostURL } from '../../constants/URL';
 
 import {
     StyledContainer,
@@ -18,105 +13,98 @@ import {
     ReviewBox,
     ReviewText,
     ExtraText,
-    
 } from '../../components/styles';
-import { FlatList } from 'react-native';
 
-function UserReviews({navigation}) {
-    const url = HostURL + "/user/getReviews";
-    const bookurl = HostURL + "/user/getBookData";
+const UserReviews = ({ navigation }) => {
+    const reviewsUrl = `${HostURL}/user/getReviews`;
+    const bookDataUrl = `${HostURL}/user/getBookData`;
 
-    const [allReviewData, setReviewData] = useState('');
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    //context -> will be important later
-    const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
-    const { _id, name, username, email } = storedCredentials;
-    
-    async function getAllData() {
-        axios.get(url, {params: {userId:_id}}).then(res => {
-            setReviewData(res.data.data);
-        });
-    }
+    // Context data
+    const { storedCredentials } = useContext(CredentialsContext);
+    const { _id } = storedCredentials;
+
+    // Fetch all reviews
+    const fetchReviews = useCallback(async () => {
+        try {
+            const response = await axios.get(reviewsUrl, { params: { userId: _id } });
+            setReviews(response.data.data || []);
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [_id]);
 
     useEffect(() => {
-        getAllData(); 
-    }, []);
+        fetchReviews();
+    }, [fetchReviews]);
 
+    // Format date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed, so add 1
-        const day = String(date.getDate()).padStart(2, '0');
+        return date.toISOString().split('T')[0]; // Example: '2024-11-04'
+    };
 
-        return `${year}-${month}-${day}`; // Example: '2024-11-04'
-    }
-
-    const Rev = ({ review }) => {
+    // Render a single review
+    const ReviewItem = ({ review }) => {
         const [bookData, setBookData] = useState(null);
 
         useEffect(() => {
-            // Fetch book data when the component mounts
             const fetchBookData = async () => {
                 try {
-                    const res = await axios.get(bookurl, { params: { bookId: review.bookId } });
-                    setBookData(res.data.data);  // Set book data
+                    const response = await axios.get(bookDataUrl, { params: { bookId: review.bookId } });
+                    setBookData(response.data.data);
                 } catch (error) {
-                    console.error("Error fetching book data", error);
+                    console.error('Error fetching book data:', error);
                 }
             };
 
             fetchBookData();
-        }, [review.bookId]); // Re-fetch if bookId changes
+        }, [review.bookId]);
 
-        if (!bookData) {
-            return <ReviewText>Loading book details...</ReviewText>;
-        }
+        if (!bookData) return <ReviewText>Loading book details...</ReviewText>;
 
         const handlePress = () => {
-            navigation.navigate('BookDetails', { book: bookData, fromReview: true})
-        }
+            navigation.navigate('BookDetails', { book: bookData, fromReview: true });
+        };
 
         return (
-            <>
             <ReviewBox onPress={handlePress}>
-                <ReviewText date={true}>{formatDate(review.date)}</ReviewText>
+                <ReviewText date>{formatDate(review.date)}</ReviewText>
                 <ReviewText>Book: {bookData.title}</ReviewText>
                 <ReviewText>Author: {bookData.author}</ReviewText>
                 <ReviewText>Rating: {review.rating}</ReviewText>
                 <ReviewText>"{review.description}"</ReviewText>
             </ReviewBox>
-            </>
-        )
+        );
     };
 
-    const numberOfReviews = allReviewData.length;
-
-
     return (
-            <StyledContainer>
-            <StatusBar style="dark"/>
-                <InnerContainer>
-                    <PageTitle>Your Reviews</PageTitle>
-                    <Line></Line>
-                    {numberOfReviews > 0 ? (
-                        <>
-                            <ExtraText>Total Reviews: {numberOfReviews}</ExtraText>
-                             <FlatList 
-                            data={allReviewData}
-                            keyExtractor={item => item._id}
-                            renderItem={({item}) => (<Rev review={item}/>)}
+        <StyledContainer>
+            <InnerContainer>
+                <PageTitle>Your Reviews</PageTitle>
+                <Line />
+
+                {loading ? (
+                    <ExtraText>Loading your reviews...</ExtraText>
+                ) : reviews.length > 0 ? (
+                    <>
+                        <ExtraText>Total Reviews: {reviews.length}</ExtraText>
+                        <FlatList
+                            data={reviews}
+                            keyExtractor={(item) => item._id}
+                            renderItem={({ item }) => <ReviewItem review={item} />}
                         />
-                        </>
-                    ) : (
-                        <ExtraText>You don't have any reviews yet!</ExtraText>
-                    )}
-
-                   
-
-                </InnerContainer>
-            </StyledContainer>
+                    </>
+                ) : (
+                    <ExtraText>You don't have any reviews yet!</ExtraText>
+                )}
+            </InnerContainer>
+        </StyledContainer>
     );
-}
+};
 
 export default UserReviews;
-
