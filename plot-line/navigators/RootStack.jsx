@@ -1,10 +1,7 @@
 import React from 'react';
-
-//React navigation
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-// credentials context
 import { CredentialsContext } from '../components/CredentialsContext';
 
 // screens
@@ -41,7 +38,8 @@ const RootStack = () => {
                             <Stack.Screen name="OthersReviews" component={OthersReviews} options={{title: 'Back to Home', headerShown: true}}/>
                             <Stack.Screen name="PlotlineBookReviews" component={PlotlineBookReviews} options={{title: '', headerShown: true}}/>
                             <Stack.Screen name="GoogleBookReviews" component={GoogleBookReviews} options={{title: '', headerShown: true}}/>
-
+                            <Stack.Screen name="ReviewGoogleBook" component={ReviewGoogleBook} options={{title: 'Back to Search', headerShown: true}}/>
+                            <Stack.Screen name="ReviewPlotlineBook" component={ReviewPlotlineBook} options={{title: '', headerShown: true}}/>
                             <Stack.Screen 
                                     name="BookDetails" 
                                     component={BookDetails} 
@@ -60,24 +58,18 @@ const RootStack = () => {
                                     headerBackTitleVisible: false, // Optional: Hide back title
                                 }} 
                             />
-                            <Stack.Screen name="ReviewGoogleBook" component={ReviewGoogleBook} options={{title: 'Back to Search', headerShown: true}}/>
-                            <Stack.Screen name="ReviewPlotlineBook" component={ReviewPlotlineBook} options={{title: '', headerShown: true}}/>
-
                         </>
-                        : <>
-                        <Stack.Screen name="Welcome" component={Welcome}/>
-                        <Stack.Screen name="Login" component={Login}/>
-                        <Stack.Screen name="Signup" component={Signup}/>
+                        : 
+                        <>
+                            <Stack.Screen name="Welcome" component={Welcome}/>
+                            <Stack.Screen name="Login" component={Login}/>
+                            <Stack.Screen name="Signup" component={Signup}/>
                         </>
                     }
                     </Stack.Navigator>
                 </NavigationContainer>
-
             )}
         </CredentialsContext.Consumer>
-
-
-
     );
 }
 
