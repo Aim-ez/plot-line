@@ -1,95 +1,52 @@
 import React, {useState, useContext} from 'react';
-
+import { ScrollView } from 'react-native';
 
 import { Formik } from 'formik';
-import { View, ScrollView } from 'react-native';
-
-// API Client
 import axios from 'axios';
 
-// credntials context
 import { CredentialsContext } from '../../components/CredentialsContext.jsx'
-
 import { HostURL } from '../../constants/URL.ts';
-
-// keyboard avoiding wrapper
 import KeyboardAvoidingWrapper from '../../components/KeyboardAvoidingWrapper';
-
-
-import { Ionicons } from '@expo/vector-icons';
+import { checkReviewExists, createPlotlineBook } from '../../hooks/userReviewLogic.js';
+import ReviewInput from '../../components/TextInput'; // Reusable TextInput Component
 
 import {
     StyledContainer,
     InnerContainer,
     PageTitle,
+    PageLogo,
     MsgBox,
     SubTitle,
     StyledFormArea,
     StyledButton,
     ButtonText,
     Line,
-    StyledTextInput,
-    StyledInputLabel,
-    PageLogo,
-    LeftIcon,
     Colors,
 } from '../../components/styles';
 
-
-
-const {brand, darkLight } = Colors;
+const { darkLight } = Colors;
 
 const ReviewGoogleBook = ({navigation, route}) => {
     const reviewurl = HostURL + "/user/createReview"
-    const bookurl = HostURL + "/user/createBook"
-    const bookexistsurl = HostURL + "/user/bookExists"
-    const reviewexistsurl = HostURL + "/user/reviewExists"
     const { book } = route.params;
 
     const currentDate = new Date().toISOString();
 
-
-    //context -> will be important later
-    const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
+    const { storedCredentials } = useContext(CredentialsContext);
     const { _id } = storedCredentials;
     const title = book?.volumeInfo.title || "No Title Available";  // Default title if missing
-
-
 
     const [message, setMessage] = useState();
     const [messageType, setMessageType] = useState();
     const [submitting, setSubmitting] = useState();
-
-    const checkReviewExists = async (bookId) => {
-        try {
-            const response = await axios.get(reviewexistsurl, {params:
-                {
-                    userId: _id,
-                    bookId: bookId
-                }
-            })
-
-            if (response.data.status == 'NOT FOUND') {
-                return false;
-            } else if (response.data.status == 'FOUND') {
-                return true;
-            } else {
-                console.error('Error checking if review for book exists', response.data);
-                return null; 
-            }
-        } catch (error) {
-            console.log(error);
-            handleMessage("An error occured. Check your network and try again.");
-        }
-    }
    
 
     const handleCreateReview = async (reviewInfo) => {
         handleMessage(null); // Reset error message
         const {rating, description } = reviewInfo;
 
-        // get bookId to put review on
-        const bookId = await createPlotlineBook()
+        // get plotline bookId to put review on
+        const bookId = await createPlotlineBook(book)
 
         const formData = {
             rating,
@@ -100,11 +57,11 @@ const ReviewGoogleBook = ({navigation, route}) => {
         }
 
         try {     
-            if (bookId == 1) {
+            if (bookId == 1) { //Book ID's will look like 6ec95j...
                 console.error('Something broke in book creation', response.data);
             } else {   
                 // check if user has already reviewed this book
-                const reviewExists = await checkReviewExists(bookId);
+                const reviewExists = await checkReviewExists(_id, bookId);
 
                 if (reviewExists == true) {
                     handleMessage("You have already reviewed this book!", 'FAILED');
@@ -118,7 +75,7 @@ const ReviewGoogleBook = ({navigation, route}) => {
                         handleMessage(message, status);
                         setSubmitting(false);
                     } else { 
-                        handleMessage("Review created. Check your profile to see your reviews!", 'SUCCESS')
+                        handleMessage("Review created.", 'SUCCESS')
                         console.log("REVIEW CREATION SUCCESSFUL")
                         navigation.navigate('TabLayout')
                     }
@@ -132,87 +89,6 @@ const ReviewGoogleBook = ({navigation, route}) => {
         }
     }
 
-
-    const checkPlotBookExists= async (bookData) => {
-        const { title, author, isbn } = bookData;
-
-        try {
-            const response = await axios.get(bookexistsurl, {params:
-                {
-                    title: title,
-                    author: author,
-                    isbn: isbn
-                }
-            })
-
-            if (response.data.status == 'NOT FOUND') {
-                return false;
-            } else if (response.data.status == 'FOUND') {
-                const bookId = response.data.data.bookId
-                return bookId;
-            } else {
-                console.error('Error checking if plot book exists', response.data);
-                return null; 
-            }
-        } catch (error) {
-            console.log(error);
-            handleMessage("An error occured. Check your network and try again.");
-        }
-    }
-
-    const createPlotlineBook = async () => {
-        //title defined above, siince it was used for page title
-        const isbn = book.volumeInfo?.industryIdentifiers?.find(identifier => identifier.type === "ISBN_13")?.identifier 
-        || book.volumeInfo?.industryIdentifiers?.find(identifier => identifier.type === "ISBN_10")?.identifier
-        || null;        
-        const author = book.volumeInfo?.authors && book.volumeInfo.authors.length > 0 ? book.volumeInfo.authors.join(', ') : 'Unknown author';
-        const description = book.volumeInfo?.description || 'No description available';
-        const published = book.volumeInfo?.publishedDate || 'Unknown publication date';
-        const coverLink = book.volumeInfo.imageLinks?.thumbnail || '';
-
-        bookData = {
-            title, 
-            isbn,
-            author,
-            description,
-            published,
-            coverLink
-        }
-
-        try{
-            const exists = await checkPlotBookExists(bookData);
-
-            if (exists == null) { //error occured
-                console.error('Error checking if plot book exists', response.data);
-            } else if (exists == false) { //book doesn't exist, create
-                const response = await axios.post(bookurl, bookData)
-                const result = response.data;
-                const {message, status, data} = result;
-
-                if (status != 'SUCCESS') {
-                        handleMessage(message, status);
-                        setSubmitting(false);
-                        return 1;
-                } else { 
-                    console.log("BOOK CREATION SUCCESSFUL")
-                    return (data._id);
-                }
-            } else { //book exists, exists contains bookId
-                return exists;
-            }
-
- 
-        } catch (error) {
-            console.log(error);
-            setSubmitting(false);
-            handleMessage("An error occured. Check your network and try again.");
-            return 1;
-        }
-
-    }
-    
-
-
     const handleMessage = (message, type = 'FAILED') => {
         setMessage(message);
         setMessageType(type);
@@ -224,8 +100,8 @@ const ReviewGoogleBook = ({navigation, route}) => {
                 <ScrollView>
                     <InnerContainer>
                         <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
-                        <PageTitle>Reviewing {title}</PageTitle>
-                        <SubTitle>Subtitle needed?</SubTitle>
+                        <PageTitle>Reviewing:</PageTitle>
+                        <SubTitle>{title}</SubTitle>
                         <Formik
                             initialValues={{rating: '', description: ''}}
                             onSubmit={(values) => {
@@ -243,8 +119,9 @@ const ReviewGoogleBook = ({navigation, route}) => {
                                     handleCreateReview(values);
                                 }
                             }}
-                        >{({handleChange, handleBlur, handleSubmit, values}) => (<StyledFormArea>
-                            <MyTextInput 
+                        >{({handleChange, handleBlur, handleSubmit, values}) => (
+                        <StyledFormArea>
+                            <ReviewInput 
                                 label="Rating (out of 5)"
                                 icon="star"
                                 placeholder="3"
@@ -255,7 +132,7 @@ const ReviewGoogleBook = ({navigation, route}) => {
                                 returnKeyType="done"
                                 onSubmitEditing={handleSubmit} // Submit the form
                             />
-                            <MyTextInput 
+                            <ReviewInput 
                                 label="Review"
                                 icon="book"
                                 placeholder="Enter review message here...(optional)"
@@ -283,21 +160,6 @@ const ReviewGoogleBook = ({navigation, route}) => {
             </StyledContainer>
         </KeyboardAvoidingWrapper>
     );
-}
-
-const MyTextInput = ({label, icon, ...props}) => {
-    return (<View >
-
-        <StyledInputLabel>{label}</StyledInputLabel>
-        
-        <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-            <LeftIcon>
-                <Ionicons name={icon} size={30} color={brand}/>
-            </LeftIcon>
-            <StyledTextInput {...props}/>
-        </View>
-
-    </View>)
 }
 
 export default ReviewGoogleBook;

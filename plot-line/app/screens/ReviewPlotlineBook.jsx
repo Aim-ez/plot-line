@@ -1,22 +1,14 @@
 import React, {useState, useContext} from 'react';
-
+import { ScrollView } from 'react-native';
 
 import { Formik } from 'formik';
-import { View, ScrollView } from 'react-native';
-
-// API Client
 import axios from 'axios';
 
-// credntials context
 import { CredentialsContext } from '../../components/CredentialsContext.jsx'
-
 import { HostURL } from '../../constants/URL.ts';
-
-// keyboard avoiding wrapper
 import KeyboardAvoidingWrapper from '../../components/KeyboardAvoidingWrapper';
-
-
-import { Ionicons } from '@expo/vector-icons';
+import { checkReviewExists } from '../../hooks/userReviewLogic.js';
+import ReviewInput from '../../components/TextInput'; // Reusable TextInput Component
 
 import {
     StyledContainer,
@@ -28,27 +20,21 @@ import {
     StyledButton,
     ButtonText,
     Line,
-    StyledTextInput,
-    StyledInputLabel,
     PageLogo,
-    LeftIcon,
     Colors,
 } from '../../components/styles';
 
-
-
-const {brand, darkLight} = Colors;
+const {darkLight} = Colors;
 
 const ReviewPlotlineBook = ({navigation, route}) => {
     const reviewurl = HostURL + "/user/createReview"
-    const reviewexistsurl = HostURL + "/user/reviewExists"
     const { book } = route.params;
 
     const currentDate = new Date().toISOString();
 
 
     //context -> will be important later
-    const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
+    const { storedCredentials } = useContext(CredentialsContext);
     const { _id } = storedCredentials;
     const title = book?.title || "No Title Available";  // Default title if missing
 
@@ -58,28 +44,6 @@ const ReviewPlotlineBook = ({navigation, route}) => {
     const [messageType, setMessageType] = useState();
     const [submitting, setSubmitting] = useState();
 
-    const checkReviewExists = async (bookId) => {
-        try {
-            const response = await axios.get(reviewexistsurl, {params:
-                {
-                    userId: _id,
-                    bookId: bookId
-                }
-            })
-
-            if (response.data.status == 'NOT FOUND') {
-                return false;
-            } else if (response.data.status == 'FOUND') {
-                return true;
-            } else {
-                console.error('Error checking if review for book exists', response.data);
-                return null; 
-            }
-        } catch (error) {
-            console.log(error);
-            handleMessage("An error occured. Check your network and try again.");
-        }
-    }
    
 
     const handleCreateReview = async (reviewInfo) => {
@@ -96,7 +60,7 @@ const ReviewPlotlineBook = ({navigation, route}) => {
 
         try {     
             // check if user has already reviewed this book
-            const reviewExists = await checkReviewExists(book._id);
+            const reviewExists = await checkReviewExists(_id, book._id);
 
             if (reviewExists == true) {
                 handleMessage("You have already reviewed this book!", 'FAILED');
@@ -134,8 +98,8 @@ const ReviewPlotlineBook = ({navigation, route}) => {
                 <ScrollView>
                     <InnerContainer>
                         <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
-                        <PageTitle>Reviewing {title}</PageTitle>
-                        <SubTitle>Subtitle needed?</SubTitle>
+                        <PageTitle>Reviewing:</PageTitle>
+                        <SubTitle>{title}</SubTitle>
                         <Formik
                             initialValues={{rating: '', description: ''}}
                             onSubmit={(values) => {
@@ -154,7 +118,7 @@ const ReviewPlotlineBook = ({navigation, route}) => {
                                 }
                             }}
                         >{({handleChange, handleBlur, handleSubmit, values}) => (<StyledFormArea>
-                            <MyTextInput 
+                            <ReviewInput 
                                 label="Rating (out of 5)"
                                 icon="star"
                                 placeholder="3"
@@ -165,7 +129,7 @@ const ReviewPlotlineBook = ({navigation, route}) => {
                                 returnKeyType="done"
                                 onSubmitEditing={handleSubmit} // Submit the form
                             />
-                            <MyTextInput 
+                            <ReviewInput
                                 label="Review"
                                 icon="book"
                                 placeholder="Enter review message here...(optional)"
@@ -193,21 +157,6 @@ const ReviewPlotlineBook = ({navigation, route}) => {
             </StyledContainer>
         </KeyboardAvoidingWrapper>
     );
-}
-
-const MyTextInput = ({label, icon, ...props}) => {
-    return (<View >
-
-        <StyledInputLabel>{label}</StyledInputLabel>
-        
-        <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-            <LeftIcon>
-                <Ionicons name={icon} size={30} color={brand}/>
-            </LeftIcon>
-            <StyledTextInput {...props}/>
-        </View>
-
-    </View>)
 }
 
 export default ReviewPlotlineBook;
