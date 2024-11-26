@@ -1,244 +1,221 @@
-import React, {useState, useContext} from 'react';
-import { StatusBar } from 'expo-status-bar'
-
+import React, { useState, useContext } from 'react';
+import { ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 import { Formik } from 'formik';
-import { View, ScrollView } from 'react-native';
-
-// API client
 import axios from 'axios';
 
-// Async storage
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// credential contexts
 import { CredentialsContext } from '../../components/CredentialsContext';
-
-// icons
-import { Octicons, Ionicons } from '@expo/vector-icons';
-
-// keyboard avoiding wrapper
 import KeyboardAvoidingWrapper from '../../components/KeyboardAvoidingWrapper';
-
-// Host URL
-import { HostURL } from '../../constants/URL.ts'
+import { HostURL } from '../../constants/URL';
+import TextInput from '../../components/TextInput';
 
 import {
-    StyledContainer,
-    InnerContainer,
-    PageLogo,
-    PageTitle,
-    SubTitle,
-    StyledFormArea,
-    LeftIcon, 
-    RightIcon,
-    StyledInputLabel,
-    StyledTextInput,
-    StyledButton,
-    ButtonText,
-    Colors,
-    MsgBox,
-    Line,
-    ExtraView,
-    ExtraText,
-    TextLink,
-    TextLinkContent
+  StyledContainer,
+  InnerContainer,
+  PageLogo,
+  PageTitle,
+  SubTitle,
+  StyledFormArea,
+  StyledButton,
+  ButtonText,
+  Colors,
+  MsgBox,
+  Line,
+  ExtraView,
+  ExtraText,
+  TextLink,
+  TextLinkContent,
 } from '../../components/styles';
 
-const {brand, darkLight, primary} = Colors;
+const { primary, darkLight } = Colors;
 
-const Signup = ({navigation}) => {
-    const url = HostURL + "/user/signup"
+const Signup = ({ navigation }) => {
+  const url = `${HostURL}/user/signup`;
 
-    const [hidePassword, setHidePassword] = useState(true);
-    const [message, setMessage] = useState();
-    const [messageType, setMessageType] = useState();
-    const [submitting, setSubmitting] = useState();
-   
-    // context
-    const {storedCredentials, setStoredCredentials} = useContext(CredentialsContext);
+  const [message, setMessage] = useState();
+  const [messageType, setMessageType] = useState();
+  const [submitting, setSubmitting] = useState(false);
 
-    const handleSignup = (credentials) => {
-        handleMessage(null); // Reset error message
+  // Context for managing credentials
+  const { setStoredCredentials } = useContext(CredentialsContext);
 
-        // Normalize email and username for case-insensitivity
-        const normalizedCredentials = {
-            ...credentials,
-            email: credentials.email.toLowerCase(),
-            username: credentials.username.toLowerCase()
-        };
-        
-        axios.post(url, credentials)
-        .then((response) => {
-            const result = response.data;
-            const {message, status, data} = result;
+  // Handle signup submission
+  const handleSignup = async (credentials) => {
+    try {
+      setMessage(null);
+      setSubmitting(true);
 
-            if (status !== 'SUCCESS') {
-                handleMessage(message, status);
-            } else {
-                console.log("SIGNUP SUCESSFUL")
-                persistLogin(data, message, status); // IF DOING GOOGLE SIGN IN, REWATCH KEEPING USER LOGGED IN
-            }
-            setSubmitting(false);
-        })
-        .catch(error => {
-            console.log(error);
-            setSubmitting(false);
-            handleMessage("An error occurred. check your network and try again.");
-        })
+      // Normalize email and username
+      const normalizedCredentials = {
+        ...credentials,
+        email: credentials.email.toLowerCase(),
+        username: credentials.username.toLowerCase(),
+      };
+
+      const response = await axios.post(url, normalizedCredentials);
+      const result = response.data;
+
+      if (result.status !== 'SUCCESS') {
+        handleMessage(result.message);
+        setSubmitting(false);
+      } else {
+        persistLogin(result.data, result.message);
+      }
+    } catch (error) {
+      console.error(error);
+      handleMessage('An error occurred. Please try again.');
+      setSubmitting(false);
     }
+  };
 
-    const handleMessage = (message, type = 'FAILED') => {
-        setMessage(message);
-        setMessageType(type);
+  // Show a message
+  const handleMessage = (message, type = 'FAILED') => {
+    setMessage(message);
+    setMessageType(type);
+  };
+
+  // Persist login and store credentials
+  const persistLogin = async (credentials, message) => {
+    try {
+      await AsyncStorage.setItem('plotlineCredentials', JSON.stringify(credentials));
+      setStoredCredentials(credentials);
+      handleMessage(message, 'SUCCESS');
+      setSubmitting(false);
+    } catch (error) {
+      console.error('Error persisting login:', error);
+      handleMessage('Login persistence failed.');
+      setSubmitting(false);
     }
+  };
 
-    const persistLogin = (credentials, message, status) => {
-        AsyncStorage.setItem('plotlineCredentials', JSON.stringify(credentials))
-        .then(() => {
-            handleMessage(message, status);
-            setStoredCredentials(credentials);
-        })
-        .catch((error => {
-            console.log(error);
-            handleMessage('Persisting login failed');
-        }))
+  // Validation logic
+  const validateForm = (values) => {
+    const { name, username, email, password, confirmPassword } = values;
+
+    if (!name || !username || !email || !password || !confirmPassword) {
+      return 'Please fill in all the fields.';
     }
+    if (password !== confirmPassword) {
+      return 'Passwords do not match.';
+    }
+    return null;
+  };
 
+  return (
+    <KeyboardAvoidingWrapper>
+      <StyledContainer>
+        <ScrollView>
+          <InnerContainer>
+            <PageLogo source={require('../../assets/images/PlotLogo.png')} />
+            <PageTitle>Sign Up</PageTitle>
+            <SubTitle>Create Your Account</SubTitle>
 
-    return (
-        <KeyboardAvoidingWrapper>
-            <StyledContainer>
-                <StatusBar style="dark"/>
-                <ScrollView>
-                    <InnerContainer>
-                        <PageLogo source={require('../../assets/images/PlotLogo.png')}/>
-                        <PageTitle>Sign Up</PageTitle>
-                        <SubTitle>Create Your Account</SubTitle>
-                        <Formik
-                            initialValues={{name: '', username: '', confirmPassword: '', email: '', password: ''}}
-                            onSubmit={(values) => {
-                                if (
-                                    values.email == '' || 
-                                    values.password == '' || 
-                                    values.username== '' || 
-                                    values.confirmPassword == '' || 
-                                    values.name == ''
-                                ) {
-                                    handleMessage('Please fill in all the fields');
-                                    setSubmitting(false);
-                                } else if (values.password !== values.confirmPassword) {
-                                    handleMessage('Passwords do not match.');
-                                    setSubmitting(false);
-                                } else {
-                                    setSubmitting(true);
-                                    handleSignup(values);
-                                }
-                            }}
-                        >{({handleChange, handleBlur, handleSubmit, values}) => (<StyledFormArea>
-                            <MyTextInput 
-                                label="Full Name"
-                                icon="person"
-                                placeholder="John Doe"
-                                placeholderTextColor={darkLight}
-                                onChangeText={handleChange('name')}
-                                onBlur={handleBlur('name')}
-                                value={values.name}
-                            />
-                            <MyTextInput 
-                                label="Username"
-                                icon="mention"
-                                placeholder="johndoe"
-                                placeholderTextColor={darkLight}
-                                onChangeText={handleChange('username')}
-                                onBlur={handleBlur('username')}
-                                value={values.username}
-                            />
-                            <MyTextInput 
-                                label="Email Address"
-                                icon="mail"
-                                placeholder="example@gmail.com"
-                                placeholderTextColor={darkLight}
-                                onChangeText={handleChange('email')}
-                                onBlur={handleBlur('email')}
-                                value={values.email}
-                                keyboardType="email-address"
-                            />
-                            <MyTextInput 
-                                label="Password"
-                                icon="lock"
-                                placeholder="* * * * * * * * * * * * *"
-                                placeholderTextColor={darkLight}
-                                onChangeText={handleChange('password')}
-                                onBlur={handleBlur('password')}
-                                value={values.password}
-                                secureTextEntry={hidePassword}
-                                isPassword={true}
-                                hidePassword={hidePassword}
-                                setHidePassword={setHidePassword}
-                            />
-                            <MyTextInput 
-                                label="Confirm Password"
-                                icon="lock"
-                                placeholder="* * * * * * * * * * * * *"
-                                placeholderTextColor={darkLight}
-                                onChangeText={handleChange('confirmPassword')}
-                                onBlur={handleBlur('confirmPassword')}
-                                value={values.confirmPassword}
-                                secureTextEntry={hidePassword}
-                                isPassword={true}
-                                hidePassword={hidePassword}
-                                setHidePassword={setHidePassword}
-                                returnKeyType="done"
-                                onSubmitEditing={handleSubmit} // Submit the form
-                            />
-                            <MsgBox type={messageType}>{message}</MsgBox>
-                            {!submitting && (
-                                <StyledButton onPress={handleSubmit}>
-                                    <ButtonText>Sign Up</ButtonText>
-                                </StyledButton>
-                            )}
-                            {submitting && (
-                                <StyledButton disabled={true}>
-                                     <Ionicons name={'ellipse-outline'} size={30} color={primary}/>
-                                </StyledButton>
-                            )}
-                            <Line />
+            <Formik
+              initialValues={{
+                name: '',
+                username: '',
+                email: '',
+                password: '',
+                confirmPassword: '',
+              }}
+              onSubmit={(values) => {
+                const error = validateForm(values);
+                if (error) {
+                  handleMessage(error);
+                  setSubmitting(false);
+                } else {
+                  handleSignup(values);
+                }
+              }}
+            >
+              {({ handleChange, handleBlur, handleSubmit, values }) => (
+                <StyledFormArea>
+                  <TextInput
+                    label="Full Name"
+                    icon="person"
+                    placeholder="John Doe"
+                    placeholderTextColor={darkLight}
+                    onChangeText={handleChange('name')}
+                    onBlur={handleBlur('name')}
+                    value={values.name}
+                  />
 
-                            <ExtraView>
-                            <ExtraText>Already have an account?</ExtraText> 
-                            <TextLink onPress={() => navigation.navigate("Login")}>
-                                    <TextLinkContent>Login</TextLinkContent>
-                            </TextLink>
-                            </ExtraView>
+                  <TextInput
+                    label="Username"
+                    icon="mention"
+                    placeholder="johndoe"
+                    placeholderTextColor={darkLight}
+                    onChangeText={handleChange('username')}
+                    onBlur={handleBlur('username')}
+                    value={values.username}
+                  />
 
-                        </StyledFormArea>)}
+                  <TextInput
+                    label="Email Address"
+                    icon="mail"
+                    placeholder="example@gmail.com"
+                    placeholderTextColor={darkLight}
+                    onChangeText={handleChange('email')}
+                    onBlur={handleBlur('email')}
+                    value={values.email}
+                    keyboardType="email-address"
+                  />
 
-                        </Formik>
-                    </InnerContainer>
-                </ScrollView>
-            </StyledContainer>
-        </KeyboardAvoidingWrapper>
-    );
-}
+                  <TextInput
+                    label="Password"
+                    icon="lock"
+                    placeholder="********"
+                    placeholderTextColor={darkLight}
+                    onChangeText={handleChange('password')}
+                    onBlur={handleBlur('password')}
+                    value={values.password}
+                    secureTextEntry
+                  />
 
-const MyTextInput = ({label, icon, isPassword, hidePassword, setHidePassword, ...props}) => {
-    return (<View >
+                  <TextInput
+                    label="Confirm Password"
+                    icon="lock"
+                    placeholder="********"
+                    placeholderTextColor={darkLight}
+                    onChangeText={handleChange('confirmPassword')}
+                    onBlur={handleBlur('confirmPassword')}
+                    value={values.confirmPassword}
+                    secureTextEntry
+                    returnKeyType="done"
+                    onSubmitEditing={handleSubmit}
+                  />
 
-        <StyledInputLabel>{label}</StyledInputLabel>
-        
-        <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-            <LeftIcon>
-                <Octicons name={icon} size={30} color={brand}/>
-            </LeftIcon>
-            <StyledTextInput {...props}/>
-            {isPassword && (
-                <RightIcon onPress={() => setHidePassword(!hidePassword)}>
-                    <Ionicons name={hidePassword ? 'eye-off' : 'eye'}size={30} color={darkLight}/>
-                </RightIcon>
-            )}
-        </View>
+                  <MsgBox type={messageType}>{message}</MsgBox>
 
-    </View>)
-}
+                  {!submitting && (
+                    <StyledButton onPress={handleSubmit}>
+                      <ButtonText>Sign Up</ButtonText>
+                    </StyledButton>
+                  )}
+
+                  {submitting && (
+                    <StyledButton disabled>
+                      <Ionicons name="ellipse-outline" size={30} color={primary} />
+                    </StyledButton>
+                  )}
+
+                  <Line />
+
+                  <ExtraView>
+                    <ExtraText>Already have an account? </ExtraText>
+                    <TextLink onPress={() => navigation.navigate('Login')}>
+                      <TextLinkContent>Login</TextLinkContent>
+                    </TextLink>
+                  </ExtraView>
+                </StyledFormArea>
+              )}
+            </Formik>
+          </InnerContainer>
+        </ScrollView>
+      </StyledContainer>
+    </KeyboardAvoidingWrapper>
+  );
+};
 
 export default Signup;
