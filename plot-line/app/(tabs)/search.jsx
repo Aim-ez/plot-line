@@ -1,7 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, FlatList, View, Modal, Button} from 'react-native';
+import { StyleSheet, FlatList, View, Modal, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import useFetchBooks from '../../hooks/useFetchBooks';  // Import the custom hook
+
 import {
   StyledContainer,
   InnerContainer,
@@ -22,63 +25,33 @@ import {
   FilterText,
 } from '../../components/styles';
 
-const GOOGLE_BOOKS_API_KEY = 'AIzaSyA4Z1Qm7N2_6AnPLHOtS577y4-nV_NrAb8';
-const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
-
 const Search = ({ navigation }) => {
   const [query, setQuery] = useState('');
-  const [books, setBooks] = useState([]);
-  const [resultsPerPage] = useState(35); // Set results per page to 35
-  const [modalVisible, setModalVisible] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [sortOrder, setSortOrder] = useState('');
-  const [hasSearched, setHasSearched] = useState(false);
-  const [totalResults, setTotalResults] = useState(0); // Add this line
+  const [modalVisible, setModalVisible] = useState(false);
+  const [resultsPerPage] = useState(35); // Set results per page to 35
 
+  const { books, totalResults, hasSearched, fetchBooks } = useFetchBooks(
+    query, selectedGenre, selectedLanguage, resultsPerPage, sortOrder
+  );
 
   const nav = useNavigation();
 
   useEffect(() => {
     const unsubscribe = nav.addListener('tabPress', () => {
-      // Reset all state when the tab is pressed
+      // Reset all state and trigger fetchBooks
       setQuery('');
-      setBooks([]);
       setSelectedGenre('');
       setSelectedLanguage('');
       setSortOrder('');
-      setHasSearched(false);
+      fetchBooks(); // Fetch books after resetting the state
     });
-
+  
     return unsubscribe; // Cleanup listener
   }, [nav]);
-
-  const fetchBooks = async () => {
-    try {
-      const genreQuery = selectedGenre ? `+subject:${selectedGenre}` : '';
-      const languageQuery = selectedLanguage ? `&langRestrict=${selectedLanguage}` : '';
-      const url = `${GOOGLE_BOOKS_API}?q=${query}${genreQuery}${languageQuery}&key=${GOOGLE_BOOKS_API_KEY}&maxResults=${resultsPerPage}`;
-
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Network response was not ok');
-
-      const data = await response.json();
-      let fetchedBooks = data.items || [];
-
-      setBooks(fetchedBooks);
-      setTotalResults(data.totalItems || 0);
-      setHasSearched(true);
-
-      // Apply sorting
-      if (sortOrder === 'A-Z') {
-        fetchedBooks.sort((a, b) => a.volumeInfo.title.localeCompare(b.volumeInfo.title));
-      } else if (sortOrder === 'Z-A') {
-        fetchedBooks.sort((a, b) => b.volumeInfo.title.localeCompare(a.volumeInfo.title));
-      }
-    } catch (error) {
-      console.error('Error fetching books:', error);
-    }
-  };
+  
 
   const clearFilters = () => {
     setSelectedGenre('');
@@ -121,19 +94,17 @@ const Search = ({ navigation }) => {
         </RightIcon>
 
         <InnerContainer>
-          <>
-            <FlatList
-              data={books}
-              keyExtractor={(item) => item.id}
-              renderItem={renderBookItem}
-              style={styles.results}
-            />
-            {hasSearched && (
-              <StyledButton onPress={() => navigation.navigate('addManualBook')}>
-                <ButtonText>Can't Find What You're Looking For?</ButtonText>
-              </StyledButton>
-            )}
-          </>
+          <FlatList
+            data={books}
+            keyExtractor={(item) => item.id}
+            renderItem={renderBookItem}
+            style={styles.results}
+          />
+          {hasSearched && (
+            <StyledButton onPress={() => navigation.navigate('addManualBook')}>
+              <ButtonText>Can't Find What You're Looking For?</ButtonText>
+            </StyledButton>
+          )}
         </InnerContainer>
       </InnerContainer>
 
@@ -151,7 +122,7 @@ const Search = ({ navigation }) => {
             {/* Genre Selection */}
             <SectionTitle>Genre</SectionTitle>
             <FlatList
-              key={modalVisible ? 'open' : 'closed'}  // Force re-render on modal visibility change
+              key={modalVisible ? 'open' : 'closed'}
               data={genres}
               keyExtractor={(item, index) => index.toString()}
               renderItem={({ item: genre }) => (
@@ -165,7 +136,7 @@ const Search = ({ navigation }) => {
               style={styles.genreList}
             />
 
-            {/* Language Selection */}
+            {/* Language and Sorting Selection */}
             <SectionTitle>Language</SectionTitle>
             <View style={styles.selectionRow}>
               <FilterOption
@@ -182,7 +153,6 @@ const Search = ({ navigation }) => {
               </FilterOption>
             </View>
 
-            {/* Sorting Selection */}
             <SectionTitle>Sort By</SectionTitle>
             <View style={styles.selectionRow}>
               <FilterOption
@@ -201,26 +171,26 @@ const Search = ({ navigation }) => {
 
             {/* Modal Buttons */}
             <View style={styles.modalButtons}>
-              <Button 
-                title="Apply Filters" 
+              <Button
+                title="Apply Filters"
                 onPress={() => {
                   setModalVisible(false); // Close the modal
-                  fetchBooks();           // Fetch books with the applied filters
-                }} 
+                  fetchBooks(); // Fetch books with the applied filters
+                }}
               />
-              <Button 
-                title="Clear Filters" 
+              <Button
+                title="Clear Filters"
                 onPress={() => {
-                  clearFilters();         // Clear filters
-                  fetchBooks();           // Re-fetch books without filters
+                  clearFilters(); // Clear filters
+                  fetchBooks(); // Re-fetch books without filters
                   setModalVisible(false); // Close the modal
-                }} 
-                color="orange" 
+                }}
+                color="orange"
               />
-              <Button 
-                title="Close" 
+              <Button
+                title="Close"
                 onPress={() => setModalVisible(false)} // Just close the modal
-                color="grey" 
+                color="grey"
               />
             </View>
           </ModalInnerContainer>
@@ -329,3 +299,4 @@ const styles = StyleSheet.create({
   },
 });
 export default Search;
+
