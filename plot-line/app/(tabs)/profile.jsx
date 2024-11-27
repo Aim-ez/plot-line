@@ -1,11 +1,9 @@
-import React, {useContext} from 'react';
-import { StatusBar } from 'expo-status-bar'
+import React, { useContext } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScrollView } from 'react-native';
 
-// async storage
-import AsyncStorage  from '@react-native-async-storage/async-storage'
-
-// credntials context
-import { CredentialsContext } from '../../components/CredentialsContext.jsx'
+import { CredentialsContext } from '../../components/CredentialsContext.jsx';
 
 import {
     StyledContainer,
@@ -16,64 +14,65 @@ import {
     ButtonText,
     Line,
 } from '../../components/styles';
-import { ScrollView } from 'react-native';
 
-const Profile = ({navigation}) => {
-    //context -> will be important later
+const Profile = ({ navigation }) => {
     const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
-    const { name, username, email} = storedCredentials;
 
-    const clearLogin = () => {
-        AsyncStorage.removeItem('plotlineCredentials')
-        .then(() => {
-            setStoredCredentials("");
-        })
-        .catch(error => console.log(error))
-    }
+    // Provide fallback values if `storedCredentials` is null
+    const name = storedCredentials?.name || 'NAME SHOULD BE HERE';
+    const username = storedCredentials?.username || 'USER NAME HERE';
+    const email = storedCredentials?.email || 'EMAIL HERE';
+
+    // Clear login credentials
+    const clearLogin = async () => {
+        try {
+            await AsyncStorage.removeItem('plotlineCredentials');
+            setStoredCredentials(null);
+        } catch (error) {
+            console.error('Error clearing login credentials:', error);
+        }
+    };
+
+    // Render sections to keep JSX clean
+    const renderSection = (title, subtitle, buttonText, buttonAction, isComingSoon = false) => (
+        <InnerContainer>
+            <SubTitle>{title}</SubTitle>
+            {subtitle && <SubTitle profile={true}>{subtitle}</SubTitle>}
+            <StyledButton onPress={buttonAction} disabled={isComingSoon}>
+                <ButtonText>{buttonText}</ButtonText>
+            </StyledButton>
+        </InnerContainer>
+    );
+
+    const renderUserInfo = () => (
+        <InnerContainer>
+            <SubTitle>Information</SubTitle>
+            <InnerContainer>
+                <SubTitle profile={true}>{name}</SubTitle>
+                <SubTitle profile={true}>@{username}</SubTitle>
+                <SubTitle profile={true}>{email}</SubTitle>
+                <Line />
+                <StyledButton onPress={clearLogin}>
+                    <ButtonText>Logout</ButtonText>
+                </StyledButton>
+            </InnerContainer>
+        </InnerContainer>
+    );
 
     return (
         <ScrollView>
             <StyledContainer>
-                <StatusBar style="dark"/>
+                <StatusBar style="dark" />
                 <PageTitle>Profile</PageTitle>
-                <Line thick={true}></Line>
-                    <InnerContainer>
-
-                        <SubTitle>Your Reviews</SubTitle>
-                        <StyledButton onPress={() => navigation.navigate("UserReviews")}>
-                            <ButtonText>See Reviews</ButtonText>
-                        </StyledButton>
-
-                    </InnerContainer>
-
-                    <Line></Line>
-
-                    <InnerContainer>
-                        <SubTitle>Your Favourites</SubTitle>
-                        <SubTitle profile={true}>Feature coming soon!</SubTitle>
-                        <StyledButton>
-                            <ButtonText>See Favourites</ButtonText>
-                        </StyledButton>
-
-                    </InnerContainer>
-
-                    <Line></Line>
-
-                    <InnerContainer>
-                        <SubTitle>Information</SubTitle>
-                        <InnerContainer>
-                            <SubTitle profile={true}>{name || 'NAME SHOULD BE HERE'}</SubTitle>
-                            <SubTitle profile={true}>@{username || 'USER NAME HERE'}</SubTitle>
-                            <SubTitle profile={true}>{email || 'EMAIL HERE'}</SubTitle>
-                            <Line />
-                            <StyledButton onPress={clearLogin}>
-                                <ButtonText>Logout</ButtonText>
-                            </StyledButton>      
-                        </InnerContainer>
-                    </InnerContainer>
+                <Line thick={true} />
+                {renderSection('Your Reviews', null, 'See Reviews', () => navigation.navigate('UserReviews'))}
+                <Line />
+                {renderSection('Your Favourites', 'Feature coming soon!', 'See Favourites', null, true)}
+                <Line />
+                {renderUserInfo()}
             </StyledContainer>
         </ScrollView>
     );
-}
+};
 
 export default Profile;
