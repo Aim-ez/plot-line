@@ -1,7 +1,6 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
 
-
 import {
   StyledContainer,
   InnerContainer,
@@ -18,89 +17,78 @@ import {
 const BookDetails = ({ route, navigation }) => {
   const { book, fromReview } = route.params;
 
-  goToPlotReview = ({book}) => {
-    navigation.navigate('ReviewPlotlineBook', { book: book })
-  }
+  const navigateToReview = (screen, book) => {
+    navigation.navigate(screen, { book });
+  };
 
-  goToGoogleReview = ({book}) => {
-    navigation.navigate('ReviewGoogleBook', { book: book })
-  }
+  const renderBookCover = (imageUri) => {
+    return imageUri ? (
+      <BookCoverImage source={{ uri: imageUri }} />
+    ) : (
+      <HeaderImage source={require('../../assets/images/books2.png')} />
+    );
+  };
 
+  const renderBookInfo = (title, authors, description) => (
+    <>
+      <PageTitle>{title}</PageTitle>
+      <SubTitle author={true}>Authors:</SubTitle>
+      <SubTitle author={true}>{authors}</SubTitle>
+      <ExtraText>{description || "No description available."}</ExtraText>
+    </>
+  );
+
+  const renderButtons = (onReadPress, onReviewsPress) => (
+    <>
+      <StyledButton onPress={onReadPress}>
+        <ButtonText>I've Read This</ButtonText>
+      </StyledButton>
+      <StyledButton onPress={onReviewsPress}>
+        <ButtonText>See Reviews</ButtonText>
+      </StyledButton>
+    </>
+  );
 
   const renderGoogleBook = () => {
+    const { title, authors, description, imageLinks } = book.volumeInfo;
     return (
       <InnerContainer>
-        <Line></Line>
-        {book.volumeInfo.imageLinks?.thumbnail ? (
-          <BookCoverImage source={{ uri: book.volumeInfo.imageLinks.thumbnail }}/>
-        ) : (
-          // This will show text if image is missing
-          <HeaderImage source={require('../../assets/images/books2.png')}/>
-        )}
-
+        <Line />
+        {renderBookCover(imageLinks?.thumbnail)}
         <InnerContainer>
-    
-        <PageTitle>{book.volumeInfo.title}</PageTitle>
-        <SubTitle author={true}>Authors:</SubTitle>
-        <SubTitle author={true}>{book.volumeInfo.authors?.join(', ')}</SubTitle>
-        <ExtraText bookDesc={true}>{book.volumeInfo.description || "No description available."}</ExtraText>
-        <StyledButton onPress={() => goToGoogleReview({book: book})}>
-          <ButtonText>I've Read This</ButtonText>
-        </StyledButton>
-        <StyledButton onPress={() => navigation.navigate('GoogleBookReviews', {book: book})}>
-            <ButtonText>See Reviews</ButtonText>
-          </StyledButton>
-
+          {renderBookInfo(title, authors?.join(', '), description)}
+          {renderButtons(
+            () => navigateToReview('ReviewGoogleBook', book),
+            () => navigateToReview('GoogleBookReviews', book)
+          )}
         </InnerContainer>
       </InnerContainer>
-  
-    )
-  }
+    );
+  };
 
   const renderPlotLineBook = () => {
+    const { title, author, description, coverLink } = book;
     return (
-    
       <InnerContainer>
-
-        <Line></Line>
-        {book.coverLink ? (
-          <BookCoverImage source={{ uri: book.coverLink }}/>
-        ) : (
-            // This will show text if image is missing
-            <HeaderImage source={require('../../assets/images/books2.png')}/>
+        <Line />
+        {renderBookCover(coverLink)}
+        {renderBookInfo(title, author, description)}
+        {renderButtons(
+          () => navigateToReview('ReviewPlotlineBook', book),
+          () => navigateToReview('PlotlineBookReviews', book)
         )}
-
-        <PageTitle>{book.title}</PageTitle>
-        <SubTitle author={true}>Authors:</SubTitle>
-        <SubTitle author={true}>{book.author}</SubTitle>
-        <ExtraText>{book.description || "No description available."}</ExtraText>
-       <StyledButton onPress={() => goToPlotReview({book:book})}>
-          <ButtonText>I've Read This</ButtonText>
-        </StyledButton>
-        <StyledButton onPress={() => navigation.navigate('PlotlineBookReviews', {book: book})}>
-          <ButtonText>See Reviews</ButtonText>
-        </StyledButton>
-
       </InnerContainer>
-    )
-  }
+    );
+  };
 
   return (
-    <ScrollView> 
-    
-        <StyledContainer home={true}>
-          {fromReview ? (
-            renderPlotLineBook()
-          ) : (
-            renderGoogleBook()
-          )}
-
-          <Line></Line>
-        </StyledContainer>
-
+    <ScrollView>
+      <StyledContainer home={true}>
+        {fromReview ? renderPlotLineBook() : renderGoogleBook()}
+        <Line />
+      </StyledContainer>
     </ScrollView>
   );
 };
 
 export default BookDetails;
-
