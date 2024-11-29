@@ -86,6 +86,20 @@ const ReadingList = ({navigation}) => {
         navigation.navigate('BookDetails', { book: book, fromReview: true})
     }
 
+    const removeBook = async(book) => {
+        const dataToSend = {
+            userId: _id,
+            book: book,
+          }
+
+        const response = await axios.post(removeListURL, dataToSend)
+        if (response.data.status === "SUCCESS") {
+            fetchReadingList();
+        } else {
+            console.error("Error deleting book in reading-list.jsx")
+        }
+    }
+
     // Render each book item
     const renderBook = ({ item }) => (
         <BookContainer onPress={() => goToDetails(item)}>
@@ -94,7 +108,7 @@ const ReadingList = ({navigation}) => {
                 <BookText>{item.title}</BookText>
                 <AuthorText>{item.author}</AuthorText>
                 <ExtraText readlist={true} numberOfLines={2}>{item.description}</ExtraText>
-                <DeleteIcon>
+                <DeleteIcon onPress={() => removeBook(item)}>
                     <Ionicons name="trash" color={red}/>
                 </DeleteIcon>
             </BookInfo>

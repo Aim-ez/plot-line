@@ -626,7 +626,7 @@ router.post('/addToReadingList', async (req, res) => {
         } else {
             return res.status(200).json({
                 status: "FAILED",
-                message: "Book is already in the reading list",
+                message: "This book is already in your reading list!",
             })
         }
     } catch (error) {
@@ -649,6 +649,13 @@ router.post('/removeFromReadingList', async (req, res) => {
     try {
         const list = await ReadingList.findOne({ userId });
 
+        if (!list) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "Reading list not found."
+            });
+        }
+
         const bookIndex = list.books.findIndex((b) => b.isbn === book.isbn);
         if (bookIndex === -1) {
             return res.status(404).json({ error: "Book not found in reading list"})
@@ -658,7 +665,7 @@ router.post('/removeFromReadingList', async (req, res) => {
         await list.save()
 
         return res.status(200).json({
-            status: "SUCCESSS",
+            status: "SUCCESS",
             message: "Book removed from reading list successfully",
             list,
         })
