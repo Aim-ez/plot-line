@@ -78,8 +78,8 @@ export const HeaderImage = styled.Image`
     
     ${(props) => props.readlist && `
         width: 500px;
-        height: 300px;
-        resize-mode: contain;
+        height: 170px;
+        margin-bottom: 100px;
     `}
 `;
 
@@ -87,6 +87,12 @@ export const BookCoverImage = styled.Image`
     width: 250px;
     height: 350px;
     resize-mode: contain;
+
+    ${(props) => props.readlist && `
+        width: 60px;
+        height: 100px;
+        margin-left: 10px;
+    `}
 `;
 
 export const ScreenImage = styled.Image`
@@ -231,6 +237,8 @@ export const ExtraView = styled.View`
         flex-direction: row;
         align-items: center;
         padding: 10px;
+
+        
 `;
 
 export const ExtraText = styled.Text`
@@ -250,6 +258,10 @@ export const ExtraText = styled.Text`
             shadow-offset: {width: 0px; height: 2px;};
             shadow-opacity: 0.2;
             shadow-radius: 5px;
+        `}
+
+        ${(props) => props.readlist && `
+            margin: 0px;
         `}
 `;
 
@@ -357,15 +369,31 @@ export const FilterText = styled.Text`
     `} 
 `
 
-export const PlusButton = styled.TouchableOpacity`
-    position: absolute;
-    top: 20;
-    right: 20px;
-    background-color: ${brand};
-    border-radius: 20px;
-    width: 40px;
-    height: 40px;
-    align-items: center;
-    justify-content: center;
-    zIndex: 1;
+export const BookContainer = styled.TouchableOpacity`
+        flex-direction: row;
+        background-color: ${primary};
+        margin-bottom: 12px;
+        border-radius: 8px;
+        overflow: hidden;
+        shadow-color: #000;
+        shadow-offset: {width: 0px; height: 1px;};
+        shadow-opacity: 0.1;
+        shadow-radius: 3px;
+        elevation: 2;
+`
+
+export const BookInfo = styled.View`
+        flex: 1;
+        padding: 8px;
+        justify-content: center;
+`
+
+export const DeleteIcon = styled.TouchableOpacity`
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: ${primary};
+        border-radius: 12px;
+        padding: 4px;
+        z-index: 1;
 `
