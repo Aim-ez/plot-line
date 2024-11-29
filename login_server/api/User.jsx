@@ -406,10 +406,6 @@ router.get('/reviewExists', async (req, res) => {
 // RETURN null IF BOOK WITH GIVEN DETAILS DOES NOT EXIST
 router.get('/bookExists', async (req, res) => {
     const { title, isbn, author } = req.query;
-
-    console.log(title);
-    console.log(isbn);
-    console.log(author);
     
     //All of these should match a book if it exists in our DB
     //INCLUDING IF ANY OF THEM ARE NULL
@@ -487,6 +483,43 @@ router.get('/getBookData', async (req, res) => {
     }
 });
 
+// backend route to get book object from id
+router.get('/getBook', async (req, res) => {
+    const { bookId } = req.query;
+
+    if (!bookId) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "Book ID is required."
+        });
+    }
+
+    try {
+        // Fetch the book by ID
+        const book = await Book.findById(bookId);
+
+        if (!book) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "Book not found."
+            });
+        }
+
+        // Return book data
+        res.json({
+            status: "SUCCESS",
+            data: book,
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.json({
+            status: "FAILED",
+            message: "An error occurred while fetching book data."
+        });
+    }
+});
+
 // Route to get user ID by username
 router.get('/getUserIdByUsername', async (req, res) => {
     let { username } = req.query; // Get username from query parameters
@@ -524,5 +557,115 @@ router.get('/getUserIdByUsername', async (req, res) => {
         });
     }
 });
+
+router.get('/getReadingList', async (req, res) => {
+    let { userId } = req.query;
+    userId = userId.trim();
+
+    if (!userId) {
+        console.log("User id not passed correctly")
+        return res.status(400).json({
+            status: "FAILED",
+            message: "User ID parameter is required"
+        });
+    }
+
+    try {
+        //Find readinglist by userId
+        const data = await ReadingList.findOne({ userId: userId });
+
+        if (!data) {
+            console.log("List not found")
+            return res.status(404).json({
+                status: "FAILED",
+                message: "Reading list not found"
+            });
+        }
+
+        //Return the reading list
+        return res.status(200).json({
+            status: "SUCCESS",
+            data: data
+        })
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: "FAILED",
+            message: "An error occurred while fetching user reading list"
+        });
+    }
+});
+
+router.post('/addToReadingList', async (req, res) => {
+    let { userId, book } = req.body;
+    userId = userId.trim()
+
+    if (!userId || !book) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "Reading list and book are required"
+        })
+    }
+
+    try {
+        const list = await ReadingList.findOne({ userId });
+
+        const isAlreadyInList = list.books.some(
+            (b) => b.isbn === book.isbn
+        );
+
+
+        if (!isAlreadyInList){
+            list.books.push(book);
+            await list.save();
+            return res.status(200).json({
+                status: "SUCCESS",
+                message: "Book added to reading list successfully",
+            });
+        } else {
+            return res.status(200).json({
+                status: "FAILED",
+                message: "Book is already in the reading list",
+            })
+        }
+    } catch (error) {
+        console.error("Error adding book to raeding list: ", error);
+        return res.status(500).json({ error: 'An error occured' })
+    }
+})
+
+router.post('/removeFromReadingList', async (req, res) => {
+    let { userId, book } = req.body;
+    userId = userId.trim()
+
+    if (!userId || !book) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "Reading list and book are required."
+        })
+    }
+
+    try {
+        const list = await ReadingList.findOne({ userId });
+
+        const bookIndex = list.books.findIndex((b) => b.isbn === book.isbn);
+        if (bookIndex === -1) {
+            return res.status(404).json({ error: "Book not found in reading list"})
+        }
+
+        list.books.splice(bookIndex, 1);
+        await list.save()
+
+        return res.status(200).json({
+            status: "SUCCESSS",
+            message: "Book removed from reading list successfully",
+            list,
+        })
+    } catch (error) {
+        console.error("Error removing book from reading list: ", error);
+        return res.status(500).json({error: 'An error occurred'});
+    }
+})
 
 module.exports = router;

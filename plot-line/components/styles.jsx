@@ -76,9 +76,9 @@ export const PageLogo = styled.Image`
 export const HeaderImage = styled.Image`
     margin-bottom: 20px;
     
-    ${(props) => props.rl && `
+    ${(props) => props.readlist && `
         width: 500px;
-        height: 400px;
+        height: 300px;
         resize-mode: contain;
     `}
 `;
