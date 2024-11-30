@@ -29,12 +29,16 @@ const Profile = ({ route, navigation }) => {
     const getFavURL = HostURL + "/user/getFavourite";
     const getBookURL = HostURL + "/user/getBook";
     const getAboutMeURL = HostURL + "/user/getAboutMe";
+    const getPrivacyURL = HostURL + "/user/getPrivacyStatus";
     const [aboutMe, setAboutMe] = useState('');
+    const [isPrivate, setIsPrivate] = useState(true); //default to private at first
+
 
 
     useEffect(() => {
         fetchFavorite();
         fetchAboutMe();
+        fetchPrivacyStatus();
     }, [userId]);
 
     const fetchFavorite = async () => {
@@ -62,6 +66,17 @@ const Profile = ({ route, navigation }) => {
             }
         } catch (error) {
             console.error("Error fetching 'About Me':", error);
+        }
+    };
+
+    const fetchPrivacyStatus = async () => {
+        try {
+            const response = await axios.get(getPrivacyURL, { params: { userId: userId } });
+            if (response.data.status === "SUCCESS") {
+                setIsPrivate(response.data.data); // Set initial privacy status
+            }
+        } catch (error) {
+            console.error("Error fetching privacy status:", error);
         }
     };
 
@@ -107,18 +122,30 @@ const Profile = ({ route, navigation }) => {
             <ExtraText>*Insert book similar to reading list*</ExtraText>
         </InnerContainer>
     )
+
+    const renderProfile = () => (
+        <>
+            <Line thick={true} />
+            {renderAboutMe()}
+            <Line />
+            {renderFavourite()}
+            <Line />
+            {renderCurrentlyReading()}
+        </>
+    )
+
+    const renderPrivate = () => (
+        <InnerContainer>
+            <SubTitle>This account is set to private.</SubTitle>
+        </InnerContainer>
+    )
     
 
     return (
         <ScrollView>
             <StyledContainer>
                 <PageTitle>@{username}'s Profile</PageTitle>
-                <Line thick={true} />
-                 {renderAboutMe()}
-                <Line />
-                {renderFavourite()}
-                <Line />
-                {renderCurrentlyReading()}
+                {isPrivate ? renderPrivate() : renderProfile()}
             </StyledContainer>
         </ScrollView>
     );

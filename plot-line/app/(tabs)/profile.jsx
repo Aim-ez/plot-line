@@ -45,14 +45,15 @@ const Profile = ({ navigation }) => {
     const clearFavURL = HostURL + "/user/clearFavourite";
     const getAboutMeURL = HostURL + "/user/getAboutMe";
     const updateAboutMeURL = HostURL + "/user/updateAboutMe";
+    const togglePrivacyURL = HostURL + "/user/togglePrivacy";
+    const getPrivacyURL = HostURL + "/user/getPrivacyStatus";
     const nav = useNavigation();
-
 
     const [favorite, setFavorite] = useState(false);
     const [aboutMe, setAboutMe] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [aboutMeInput, setAboutMeInput] = useState('');
-
+    const [isPrivate, setIsPrivate] = useState(false); 
     
 
 
@@ -68,6 +69,7 @@ const Profile = ({ navigation }) => {
     useEffect(() => {
         fetchFavorite();
         fetchAboutMe();
+        fetchPrivacyStatus();
     }, [_id]);
 
     const fetchFavorite = async () => {
@@ -123,6 +125,30 @@ const Profile = ({ navigation }) => {
         }
     };
 
+    const fetchPrivacyStatus = async () => {
+        try {
+            const response = await axios.get(getPrivacyURL, { params: { userId: _id } });
+            if (response.data.status === "SUCCESS") {
+                setIsPrivate(response.data.data); // Set initial privacy status
+            }
+        } catch (error) {
+            console.error("Error fetching privacy status:", error);
+        }
+    };
+
+    const togglePrivacy = async () => {
+        try {
+            const response = await axios.post(togglePrivacyURL, { userId: _id });
+            if (response.data.status === "SUCCESS") {
+                setIsPrivate(response.data.data); // Update state with new privacy status
+            } else {
+                console.error("Error toggling privacy:", response.data.message);
+            }
+        } catch (error) {
+            console.error("Error toggling privacy:", error);
+        }
+    };
+
     const goToDetails = (book) => {
         navigation.navigate('BookDetails', { book: book, fromReview: true})
     }
@@ -144,6 +170,12 @@ const Profile = ({ navigation }) => {
                 <SubTitle profile={true}>{name}</SubTitle>
                 <SubTitle profile={true}>@{username}</SubTitle>
                 <SubTitle profile={true}>{email}</SubTitle>
+                <SubTitle profile={true}>
+                    Your Profile is Currently Set to{' '}
+                    <ExtraText onPress={togglePrivacy} style={{ textDecorationLine: 'underline', color: tertiary }}>
+                        {isPrivate ? 'Private' : 'Public'}
+                    </ExtraText>
+                </SubTitle>
                 <Line />
                 <StyledButton onPress={clearLogin}>
                     <ButtonText>Logout</ButtonText>

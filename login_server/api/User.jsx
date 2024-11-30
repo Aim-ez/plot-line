@@ -563,7 +563,6 @@ router.get('/getReadingList', async (req, res) => {
     userId = userId.trim();
 
     if (!userId) {
-        console.log("User id not passed correctly")
         return res.status(400).json({
             status: "FAILED",
             message: "User ID parameter is required"
@@ -575,7 +574,6 @@ router.get('/getReadingList', async (req, res) => {
         const data = await ReadingList.findOne({ userId: userId });
 
         if (!data) {
-            console.log("List not found")
             return res.status(404).json({
                 status: "FAILED",
                 message: "Reading list not found"
@@ -847,6 +845,44 @@ router.post('/updateAboutMe', async (req, res) => {
     }
 });
 
+// Route to toggle privacy status
+router.post('/togglePrivacy', async (req, res) => {
+    const { userId } = req.body;
 
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ status: "FAILED", message: "User not found" });
+        }
+
+        // Toggle privacy status
+        user.private = !user.private;
+        await user.save();
+
+        return res.status(200).json({ status: "SUCCESS", data: user.private });
+    } catch (error) {
+        console.error("Error toggling privacy status:", error);
+        return res.status(500).json({ status: "FAILED", message: "Error toggling privacy status" });
+    }
+});
+
+// Route to get the privacy status of a user
+router.get('/getPrivacyStatus', async (req, res) => {
+    const { userId } = req.query;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ status: "FAILED", message: "User not found" });
+        }
+
+        return res.status(200).json({ status: "SUCCESS", data: user.private });
+    } catch (error) {
+        console.error("Error fetching privacy status:", error);
+        return res.status(500).json({ status: "FAILED", message: "Error fetching privacy status" });
+    }
+});
 
 module.exports = router;
