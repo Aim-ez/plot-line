@@ -28,10 +28,13 @@ const Profile = ({ route, navigation }) => {
     const [favorite, setFavorite] = useState(false);
     const getFavURL = HostURL + "/user/getFavourite";
     const getBookURL = HostURL + "/user/getBook";
+    const getAboutMeURL = HostURL + "/user/getAboutMe";
+    const [aboutMe, setAboutMe] = useState('');
 
 
     useEffect(() => {
         fetchFavorite();
+        fetchAboutMe();
     }, [userId]);
 
     const fetchFavorite = async () => {
@@ -50,6 +53,21 @@ const Profile = ({ route, navigation }) => {
             console.error("Error fetching favorite book:", error);
         }
     };
+
+    const fetchAboutMe = async () => {
+        try {
+            const response = await axios.get(getAboutMeURL, { params: { userId: userId } });
+            if (response.data.status === "SUCCESS") {
+                setAboutMe(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error fetching 'About Me':", error);
+        }
+    };
+
+    const goToDetails = (book) => {
+        navigation.navigate('BookDetails', { book: book, fromReview: true})
+    }
 
     // Render sections to keep JSX clean
     const renderFavourite = () => (
@@ -78,8 +96,7 @@ const Profile = ({ route, navigation }) => {
     const renderAboutMe = () => (
         <InnerContainer>
             <SubTitle>About Me</SubTitle>
-            <SubTitle profile={true}>Feature coming soon!</SubTitle>
-            <ExtraText>*Cue about me*</ExtraText>
+            <ExtraText>{aboutMe || `...`}</ExtraText>
         </InnerContainer>
     );
 

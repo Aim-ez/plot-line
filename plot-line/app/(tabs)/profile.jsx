@@ -24,11 +24,13 @@ import {
     BookText,
     AuthorText,
     DeleteIcon,
-    Colors
+    Colors,
+    StyledTextInput,
+    FlexRowContainer
 } from '../../components/styles';
-const {red} = Colors;
+const {red, tertiary} = Colors;
 
-
+import { View } from 'react-native';
 
 const Profile = ({ navigation }) => {
     const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
@@ -41,14 +43,23 @@ const Profile = ({ navigation }) => {
     const getFavURL = HostURL + "/user/getFavourite";
     const getBookURL = HostURL + "/user/getBook";
     const clearFavURL = HostURL + "/user/clearFavourite";
+    const getAboutMeURL = HostURL + "/user/getAboutMe";
+    const updateAboutMeURL = HostURL + "/user/updateAboutMe";
     const nav = useNavigation();
 
 
     const [favorite, setFavorite] = useState(false);
+    const [aboutMe, setAboutMe] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [aboutMeInput, setAboutMeInput] = useState('');
+
+    
+
 
     useEffect(() => {
         const unsubscribe = nav.addListener('tabPress', () => {
             fetchFavorite();
+            fetchAboutMe();
         });
     
         return unsubscribe; // Cleanup listener
@@ -56,6 +67,7 @@ const Profile = ({ navigation }) => {
 
     useEffect(() => {
         fetchFavorite();
+        fetchAboutMe();
     }, [_id]);
 
     const fetchFavorite = async () => {
@@ -72,6 +84,32 @@ const Profile = ({ navigation }) => {
            }
         } catch (error) {
             console.error("Error fetching favorite book:", error);
+        }
+    };
+
+    const fetchAboutMe = async () => {
+        try {
+            const response = await axios.get(getAboutMeURL, { params: { userId: _id } });
+            if (response.data.status === "SUCCESS") {
+                setAboutMe(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error fetching 'About Me':", error);
+        }
+    };
+
+
+    const updateAboutMe = async () => {
+        try {
+            const response = await axios.post(updateAboutMeURL, { userId: _id, aboutMe: aboutMeInput });
+            if (response.data.status === "SUCCESS") {
+                setAboutMe(aboutMeInput);
+                setIsEditing(false);
+            } else {
+                console.error("Error updating 'About Me':", response.data.message);
+            }
+        } catch (error) {
+            console.error("Error updating 'About Me':", error);
         }
     };
 
@@ -138,11 +176,39 @@ const Profile = ({ navigation }) => {
             </InnerContainer>
         );
     
+
         const renderAboutMe = () => (
             <InnerContainer>
-                <SubTitle>About You</SubTitle>
-                <SubTitle profile={true}>Feature coming soon!</SubTitle>
-                <ExtraText>*Cue about me*</ExtraText>
+                <SubTitle>About Me</SubTitle>
+                {isEditing ? (
+                    <>
+                        <StyledTextInput
+                            about = {true}
+                            multiline
+                            maxLength={500}
+                            value={aboutMeInput}
+                            onChangeText={(text) => setAboutMeInput(text)}
+                        />
+                        <FlexRowContainer>
+                            <StyledButton about={true} onPress={updateAboutMe}>
+                                <ButtonText >Save</ButtonText>
+                            </StyledButton>
+                            <StyledButton about={true} onPress={() => setIsEditing(false)}>
+                                <ButtonText>Cancel</ButtonText>
+                            </StyledButton>
+                        </FlexRowContainer>
+                    </>
+                ) : (
+                    <>
+                        <ExtraText>{aboutMe || `Tell us about yourself!`}</ExtraText>
+                        <DeleteIcon onPress={() => {
+                            setIsEditing(true);
+                            setAboutMeInput(aboutMe);
+                        }}>
+                            <Ionicons name="pencil" color={tertiary}/>
+                         </DeleteIcon>
+                    </>
+                )}
             </InnerContainer>
         );
     

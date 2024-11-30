@@ -157,6 +157,10 @@ export const StyledTextInput = styled.TextInput`
     margin-vertical: 3px;
     margin-bottom: 10px;
     color: ${tertiary};
+
+    ${(props) => props.about && `
+        height: 120px;
+    `}
 `;
 
 export const StyledInputLabel = styled.Text`
@@ -203,12 +207,11 @@ export const StyledButton = styled.TouchableOpacity`
         width: 300px;
         `}
 
-    ${(props) => props.google == true && `
-        background-color: ${green};
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
+    ${(props) => props.about && `
+        width: 90px;
+        margin: 20px;
     `}
+
 `;
 
 export const ButtonText = styled.Text`
@@ -396,4 +399,8 @@ export const DeleteIcon = styled.TouchableOpacity`
         border-radius: 12px;
         padding: 4px;
         z-index: 1;
+`
+
+export const FlexRowContainer = styled.View`
+        flex-direction: row;
 `

@@ -798,4 +798,55 @@ router.get('/getFavourite', async (req, res) => {
     }
 });
 
+// Fetch 'About Me'
+router.get('/getAboutMe', async (req, res) => {
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ status: "FAILED", message: "UserID is required." });
+    }
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ status: "FAILED", message: "User not found." });
+        }
+
+        return res.status(200).json({ status: "SUCCESS", data: user.about });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: "FAILED", message: "Error fetching 'About Me'." });
+    }
+});
+
+// Update 'About Me'
+router.post('/updateAboutMe', async (req, res) => {
+    const { userId, aboutMe } = req.body;
+
+    if (!userId || aboutMe === undefined) {
+        return res.status(400).json({ status: "FAILED", message: "UserID and AboutMe are required." });
+    }
+
+    if (aboutMe.length > 500) {
+        return res.status(400).json({ status: "FAILED", message: "'About Me' exceeds 500 characters." });
+    }
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ status: "FAILED", message: "User not found." });
+        }
+
+        user.about = aboutMe;
+        await user.save();
+
+        return res.status(200).json({ status: "SUCCESS", message: "'About Me' updated successfully." });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: "FAILED", message: "Error updating 'About Me'." });
+    }
+});
+
+
+
 module.exports = router;
