@@ -675,4 +675,85 @@ router.post('/removeFromReadingList', async (req, res) => {
     }
 })
 
+router.post('/setFavourite', async (req, res) => {
+    let {userId, bookId} = req.body;
+    userId = userId.trim()
+    bookId = bookId.trim()
+
+    if (!userId || !bookId) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "UserID and bookID are required."
+        })
+    }
+    try {
+        // Check if the user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "User not found.",
+            });
+        }
+
+        // Check if the book exists
+        const book = await Book.findById(bookId);
+        if (!book) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "Book not found.",
+            });
+        }
+
+        // Update the user's favourite book
+        user.favourite = bookId;
+        await user.save();
+
+        return res.status(200).json({
+            status: "SUCCESS",
+            message: "Favourite book updated successfully.",
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            status: "FAILED",
+            message: "An error occurred while updating the favourite book.",
+        });
+    }
+});
+
+router.get('/getFavourite', async (req, res) => {
+    let { userId } = req.query;
+    userId = userId.trim()
+  
+    if (!userId) {
+      return res.status(400).json({
+        status: "FAILED",
+        message: "User ID is required.",
+      });
+    }
+  
+    try {
+      const user = await User.findById(userId).populate('favourite');
+      if (!user.favourite) { //User doesnt' have a favourite
+        return res.status(200).json({
+          status: "SUCCESS",
+          data: null,
+        });
+      }
+  
+      return res.status(200).json({
+        status: "SUCCESS",
+        data: user.favourite._id,
+      });
+    } catch (error) {
+      console.error("Error fetching favorite book:", error);
+      return res.status(500).json({
+        status: "FAILED",
+        message: "An error occurred while fetching the favorite book.",
+      });
+    }
+  });
+  
+
 module.exports = router;

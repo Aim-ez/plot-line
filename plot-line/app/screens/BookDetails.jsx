@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { ScrollView } from 'react-native';
 import axios from 'axios';
 
@@ -18,19 +18,40 @@ import {
   BookCoverImage,
   HeaderImage,
   MsgBox,
+  RightIcon,
 } from '../../components/styles';
+import { Ionicons } from '@expo/vector-icons';
 
 const BookDetails = ({ route, navigation }) => {
   const { book, fromReview } = route.params;
   const { storedCredentials } = useContext(CredentialsContext);
   const {_id} = storedCredentials;
-  const getListURL = HostURL + "/user/getReadingList";
   const addListURL = HostURL + "/user/addToReadingList";
   const getBookURL = HostURL + "/user/getBook";
+  const addFavURL = HostURL + "/user/setFavourite";
+  const getFavURL = HostURL + "/user/getFavourite";
 
   const [message, setMessage] = useState();
   const [messageType, setMessageType] = useState();
+  const [isFavorite, setIsFavorite] = useState(false);
 
+  useEffect(() => {
+    const fetchFavorite = async () => {
+      try {
+        const response = await axios.get(getFavURL, {params: { userId: _id }});
+
+        if (response.data.status === "SUCCESS" && response.data.data) {
+          const favoriteBookId = response.data.data;
+          setIsFavorite(book._id === favoriteBookId);
+        }
+      } catch (error) {
+        console.error("Error fetching favorite book:", error);
+      }
+    };
+  
+    fetchFavorite();
+  }, [book._id, _id]);
+  
 
   const navigateToReview = (screen, book) => {
     navigation.navigate(screen, { book });
@@ -101,6 +122,32 @@ const BookDetails = ({ route, navigation }) => {
     }
   }
 
+  const addFavourite = async () => {
+        let bookId = null
+        if (!fromReview) {
+          // get plotline bookId
+          bookId = await createPlotlineBook(book)
+        } else {
+          bookId = book._id;
+        }
+
+        const dataToSend = {
+          userId: _id,
+          bookId: bookId,
+        }
+
+        // set favourite
+        const res = await axios.post(addFavURL, dataToSend)
+        const status = res.data.status;
+
+        if (status === "SUCCESS") {
+          handleMessage(res.data.message, status)
+          setIsFavorite(true)
+        } else {
+          handleMessage(res.data.message)
+        }
+  }
+
   // Show a message
   const handleMessage = (message, type = 'FAILED') => {
     setMessage(message);
@@ -144,6 +191,9 @@ const BookDetails = ({ route, navigation }) => {
   return (
     <ScrollView>
       <StyledContainer home={true}>
+        <RightIcon onPress={() => addFavourite()}>
+          <Ionicons name="star" size={24} color={isFavorite ? "gold" : "gray"}/>
+        </RightIcon>
         {fromReview ? renderPlotLineBook() : renderGoogleBook()}
         <Line />
         <MsgBox type={messageType}>{message}</MsgBox>

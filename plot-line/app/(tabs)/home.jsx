@@ -54,10 +54,15 @@ const Home = ({ navigation }) => {
         setMessageType(type);
     };
 
-    // Render header section
     const renderHeader = () => (
         <InnerContainer>
             <HeaderImage source={require('../../assets/images/books2.png')} />
+        </InnerContainer>
+    )
+
+    // Render header section
+    const renderOtherReviews = () => (
+        <InnerContainer>
             <PageTitle>Need a new read?</PageTitle>
             <SubTitle>See what others are reviewing:</SubTitle>
             <SearchBar
@@ -76,7 +81,7 @@ const Home = ({ navigation }) => {
     );
 
     // Render homepage section
-    const renderHomeContent = () => (
+    const renderComingSoon = () => (
         <InnerContainer>
             <PageTitle>Your Homepage</PageTitle>
             <SubTitle>More Features Coming Soon</SubTitle>
@@ -88,7 +93,8 @@ const Home = ({ navigation }) => {
         <ScrollView>
             <StyledContainer home={true}>
                 {renderHeader()}
-                {renderHomeContent()}
+                {renderOtherReviews()}
+                {renderComingSoon()}
             </StyledContainer>
         </ScrollView>
     );
