@@ -30,8 +30,11 @@ const Profile = ({ route, navigation }) => {
     const getBookURL = HostURL + "/user/getBook";
     const getAboutMeURL = HostURL + "/user/getAboutMe";
     const getPrivacyURL = HostURL + "/user/getPrivacyStatus";
+    const getCurrentURL = HostURL + "/user/getCurrentlyReading";
+
     const [aboutMe, setAboutMe] = useState('');
     const [isPrivate, setIsPrivate] = useState(true); //default to private at first
+    const [currentlyReading, setCurrentlyReadingList] = useState([]);
 
 
 
@@ -39,6 +42,8 @@ const Profile = ({ route, navigation }) => {
         fetchFavorite();
         fetchAboutMe();
         fetchPrivacyStatus();
+        fetchCurrentlyReadingList();
+
     }, [userId]);
 
     const fetchFavorite = async () => {
@@ -80,6 +85,23 @@ const Profile = ({ route, navigation }) => {
         }
     };
 
+    const fetchCurrentlyReadingList = async () => {
+        try {
+            const response = await axios.get(getCurrentURL, { params: { userId: userId } });
+
+            if (response.data.status === 'SUCCESS') {
+                setCurrentlyReadingList(response.data.data.books); // Update your state with fetched data
+            } else {
+                console.log(response.data.message); // Log any "no books" message or warnings
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                return;  // User has never added something to their currently reading list
+            }
+            console.error('Error fetching Currently Reading list:', error);
+        }
+    };
+
     const goToDetails = (book) => {
         navigation.navigate('BookDetails', { book: book, fromReview: true})
     }
@@ -91,15 +113,28 @@ const Profile = ({ route, navigation }) => {
             {renderBook(favorite)}
         </InnerContainer>
     );
-    const renderBook = (book) => {
-        if (!book) {
-            return <ExtraText>@{username} hasn't added a book to this list yet!.</ExtraText>;
+
+    const renderStatus = (status) => (
+        <AuthorText italic={true}>{status}</AuthorText>
+    )
+
+    const renderBook = (bookSent, isCurr) => {
+        if (!bookSent) {
+            return <ExtraText>No favorite book found.</ExtraText>;
         }
-    
+        let status = null
+        let book = bookSent
+
+        if (isCurr) {
+            status = book.status
+            book = bookSent.book
+        }
+
         return (
             <BookContainer onPress={() => goToDetails(book)}>
                 <BookCoverImage readlist={true} source={{ uri: book.coverLink }} />
                 <BookInfo>
+                    {isCurr ? renderStatus(status) : null}
                     <BookText>{book.title}</BookText>
                     <AuthorText>{book.author}</AuthorText>
                     <ExtraText readlist={true} numberOfLines={2}>{book.description}</ExtraText>
@@ -117,11 +152,18 @@ const Profile = ({ route, navigation }) => {
 
     const renderCurrentlyReading = () => (
         <InnerContainer>
-            <SubTitle>Currently Reading...</SubTitle>
-            <SubTitle profile={true}>Feature coming soon!</SubTitle>
-            <ExtraText>*Insert book similar to reading list*</ExtraText>
+            <SubTitle>Currently Reading</SubTitle>
+            {currentlyReading.length > 0 ? (
+                currentlyReading.map((book) => (
+                    <React.Fragment key={book._id}>
+                        {renderBook(book, true)}
+                    </React.Fragment>
+                ))
+            ) : (
+                <ExtraText>@{username} isn't currently reading anything!</ExtraText>
+            )}
         </InnerContainer>
-    )
+    );
 
     const renderProfile = () => (
         <>

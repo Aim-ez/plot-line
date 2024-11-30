@@ -1,7 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ScrollView } from 'react-native';
+import { ScrollView, RefreshControl } from 'react-native';
 import { HostURL } from '@/constants/URL.js';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
@@ -47,6 +46,10 @@ const Profile = ({ navigation }) => {
     const updateAboutMeURL = HostURL + "/user/updateAboutMe";
     const togglePrivacyURL = HostURL + "/user/togglePrivacy";
     const getPrivacyURL = HostURL + "/user/getPrivacyStatus";
+    const getCurrentURL = HostURL + "/user/getCurrentlyReading";
+    const removeCurrentURL = HostURL + "/user/removeCurrentlyReading";
+
+
     const nav = useNavigation();
 
     const [favorite, setFavorite] = useState(false);
@@ -54,13 +57,21 @@ const Profile = ({ navigation }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [aboutMeInput, setAboutMeInput] = useState('');
     const [isPrivate, setIsPrivate] = useState(false); 
-    
+    const [currentlyReading, setCurrentlyReadingList] = useState([]);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
+    const onRefresh = useCallback(async () => {
+        setIsRefreshing(true);
+        await fetchFavorite();
+        await fetchCurrentlyReadingList();
+        setIsRefreshing(false);
+      }, []);
 
     useEffect(() => {
         const unsubscribe = nav.addListener('tabPress', () => {
             fetchFavorite();
             fetchAboutMe();
+            fetchCurrentlyReadingList();
         });
     
         return unsubscribe; // Cleanup listener
@@ -70,6 +81,7 @@ const Profile = ({ navigation }) => {
         fetchFavorite();
         fetchAboutMe();
         fetchPrivacyStatus();
+        fetchCurrentlyReadingList();
     }, [_id]);
 
     const fetchFavorite = async () => {
@@ -88,6 +100,40 @@ const Profile = ({ navigation }) => {
             console.error("Error fetching favorite book:", error);
         }
     };
+
+
+    const fetchCurrentlyReadingList = async () => {
+        try {
+            const response = await axios.get(getCurrentURL, { params: { userId: _id } });
+
+            if (response.data.status === 'SUCCESS') {
+                setCurrentlyReadingList(response.data.data.books); // Update your state with fetched data
+            } else {
+                console.log(response.data.message); // Log any "no books" message or warnings
+            }
+        } catch (error) {
+            console.error('Error fetching Currently Reading list:', error);
+        }
+    };
+
+    const removeCurrentlyReading = async (bookId) => {
+        try {
+            const response = await axios.post(removeCurrentURL, {
+                userId: _id,
+                bookId,
+            });
+    
+            if (response.data.status === 'SUCCESS') {
+               fetchCurrentlyReadingList();
+            } else {
+                console.error('Error removing book from Currently Reading:', response.data.message);
+            }
+        } catch (error) {
+            console.error('Error removing book from Currently Reading:', error);
+        }
+    };
+    
+
 
     const fetchAboutMe = async () => {
         try {
@@ -201,7 +247,7 @@ const Profile = ({ navigation }) => {
         const renderFavourite = () => (
             <InnerContainer>
                 <SubTitle>Your Favourite Book</SubTitle>
-                {renderBook(favorite)}
+                {renderBook(favorite, false)}
                 <DeleteIcon onPress={() => removeFavorite()}>
                     <Ionicons name="trash" color={red}/>
                 </DeleteIcon>
@@ -246,24 +292,51 @@ const Profile = ({ navigation }) => {
     
         const renderCurrentlyReading = () => (
             <InnerContainer>
-                <SubTitle>Currently Reading...</SubTitle>
-                <SubTitle profile={true}>Feature coming soon!</SubTitle>
-                <ExtraText>*Insert book similar to reading list*</ExtraText>
+                <SubTitle>Currently Reading</SubTitle>
+                {currentlyReading.length > 0 ? (
+                    currentlyReading.map((book) => (
+                        <React.Fragment key={book._id}>
+                            {renderBook(book, true)}
+                        </React.Fragment>
+                    ))
+                ) : (
+                    <ExtraText>No books in your Currently Reading list.</ExtraText>
+                )}
             </InnerContainer>
+        );
+
+        const renderTrash= (book) => (
+            <DeleteIcon onPress={() => removeCurrentlyReading(book._id)}>
+            <Ionicons name="trash" size={12} color={red} />
+            </DeleteIcon>
         )
 
-        const renderBook = (book) => {
-            if (!book) {
+        const renderStatus = (status) => (
+            <AuthorText italic={true}>{status}</AuthorText>
+        )
+        
+
+        const renderBook = (bookSent, isCurr) => {
+            if (!bookSent) {
                 return <ExtraText>No favorite book found.</ExtraText>;
             }
-        
+            let status = null
+            let book = bookSent
+
+            if (isCurr) {
+                status = book.status
+                book = bookSent.book
+            }
+
             return (
                 <BookContainer onPress={() => goToDetails(book)}>
                     <BookCoverImage readlist={true} source={{ uri: book.coverLink }} />
                     <BookInfo>
+                        {isCurr ? renderStatus(status) : null}
                         <BookText>{book.title}</BookText>
                         <AuthorText>{book.author}</AuthorText>
                         <ExtraText readlist={true} numberOfLines={2}>{book.description}</ExtraText>
+                        {isCurr ? renderTrash(book) : null}
                     </BookInfo>
                 </BookContainer>
             );
@@ -271,7 +344,7 @@ const Profile = ({ navigation }) => {
         
     
         return (
-            <ScrollView>
+            <ScrollView refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh}/>}>
                 <StyledContainer>
                     <PageTitle>Your Profile</PageTitle>
                     <Line />

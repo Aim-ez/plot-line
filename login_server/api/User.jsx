@@ -6,6 +6,8 @@ const User = require('./../models/User.jsx');
 const ReadingList = require('./../models/ReadingList.jsx');
 const Review = require('./../models/Review.jsx');
 const Book = require('./../models/Book.jsx');
+const CurrentlyReading = require('./../models/CurrentlyReading.jsx');
+
 
 
 // Password handler
@@ -882,6 +884,109 @@ router.get('/getPrivacyStatus', async (req, res) => {
     } catch (error) {
         console.error("Error fetching privacy status:", error);
         return res.status(500).json({ status: "FAILED", message: "Error fetching privacy status" });
+    }
+});
+
+// Add or update book status in the currently reading list
+router.post('/addCurrentlyReading', async (req, res) => {
+    const { userId, bookId, status } = req.body;
+
+    if (!userId || !bookId || !status) {
+        return res.status(400).json({ status: 'FAILED', message: 'Missing required fields.' });
+    }
+
+    try {
+        let currentlyReading = await CurrentlyReading.findOne({ userId });
+
+        if (!currentlyReading) {
+            // If no currently reading document exists for the user, create one
+            currentlyReading = new CurrentlyReading({ userId, books: [] });
+        }
+
+        // Check if the book is already in the list
+        const existingBook = currentlyReading.books.find(
+            (entry) => entry.book.toString() === bookId
+        );
+
+        if (existingBook) {
+            // Update the status if the book already exists
+            existingBook.status = status;
+        } else {
+            // Add the book to the list
+            currentlyReading.books.push({ book: bookId, status });
+        }
+
+        await currentlyReading.save();
+        res.status(200).json({ status: 'SUCCESS', message: 'Book updated successfully.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: 'FAILED', message: 'Server error.' });
+    }
+});
+
+// Remove a book from the currently reading list
+router.post('/removeCurrentlyReading', async (req, res) => {
+    const { userId, bookId } = req.body;
+
+    if (!userId || !bookId) {
+        return res.status(400).json({ status: 'FAILED', message: 'Missing required fields.' });
+    }
+
+    try {
+        const currentlyReading = await CurrentlyReading.findOne({ userId });
+
+        if (!currentlyReading) {
+            return res.status(404).json({ status: 'FAILED', message: 'No reading list found.' });
+        }
+
+        // Filter out the book
+        currentlyReading.books = currentlyReading.books.filter(
+            (entry) => entry.book.toString() !== bookId
+        );
+
+        await currentlyReading.save();
+        res.status(200).json({ status: 'SUCCESS', message: 'Book removed successfully.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: 'FAILED', message: 'Server error.' });
+    }
+});
+
+// Fetch user's currently reading list
+router.get('/getCurrentlyReading', async (req, res) => {
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ status: 'FAILED', message: 'Missing userId parameter.' });
+    }
+
+    try {
+        const currentlyReading = await CurrentlyReading.findOne({ userId }).populate('books.book');
+
+        if (!currentlyReading || currentlyReading.books.length === 0) {
+            return res.status(404).json({ status: 'SUCCESS', message: 'No books in the currently reading list.', data: { books: [] } });
+        }
+
+        res.status(200).json({
+            status: 'SUCCESS',
+            message: 'Currently reading list retrieved successfully.',
+            data: {
+                books: currentlyReading.books.map((entry) => ({
+                    book: {
+                        _id: entry.book._id,
+                        title: entry.book.title,
+                        author: entry.book.author,
+                        coverLink: entry.book.coverLink,
+                        description: entry.book.description,
+                    },
+                    status: entry.status,
+                })),
+            },
+        });
+    } catch (error) {
+
+        console.error(error);
+        res.status(500).json({ status: 'FAILED', message: 'Server error.' });
     }
 });
 

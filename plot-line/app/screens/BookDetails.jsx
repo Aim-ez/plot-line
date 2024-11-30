@@ -1,10 +1,12 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, Modal } from 'react-native';
 import axios from 'axios';
+import { Picker } from '@react-native-picker/picker';
 
 import { createPlotlineBook } from '../../hooks/userReviewLogic.js';
 import { CredentialsContext } from '../../components/CredentialsContext';
 import { HostURL } from '../../constants/URL.js';
+import StatusDropdown from '../../components/StatusDropdown.jsx';
 
 import {
   StyledContainer,
@@ -19,6 +21,10 @@ import {
   HeaderImage,
   MsgBox,
   RightIcon,
+  ModalContainer,
+  ModalInnerContainer,
+  StyledPicker,
+  FlexRowContainer,
 } from '../../components/styles';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -30,10 +36,14 @@ const BookDetails = ({ route, navigation }) => {
   const getBookURL = HostURL + "/user/getBook";
   const addFavURL = HostURL + "/user/setFavourite";
   const getFavURL = HostURL + "/user/getFavourite";
+  const addCurrentURL = HostURL + "/user/addCurrentlyReading";
+
 
   const [message, setMessage] = useState();
   const [messageType, setMessageType] = useState();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState('Just Started');
 
   useEffect(() => {
     const fetchFavorite = async () => {
@@ -57,6 +67,36 @@ const BookDetails = ({ route, navigation }) => {
     navigation.navigate(screen, { book });
   };
 
+  const addBookToCurrentlyReading = async () => {
+    //Reset message box
+    handleMessage(null);
+
+    let bookId = null
+    if (!fromReview) {
+      // get plotline bookId
+      bookId = await createPlotlineBook(book)
+    } else {
+      bookId = book._id;
+    }
+
+    try {
+        const response = await axios.post(addCurrentURL, {
+            userId: _id,
+            bookId: bookId,
+            status: selectedStatus,
+        });
+
+        if (response.data.status === 'SUCCESS') {
+            alert('Book added/updated in Currently Reading list!');
+            setModalVisible(false);
+        } else {
+            console.error(response.data.message);
+        }
+    } catch (error) {
+        console.error('Error adding/updating Currently Reading:', error);
+    }
+};
+
   const renderBookCover = (imageUri) => {
     return imageUri ? (
       <BookCoverImage source={{ uri: imageUri }} />
@@ -71,20 +111,6 @@ const BookDetails = ({ route, navigation }) => {
       <SubTitle author={true}>Authors:</SubTitle>
       <SubTitle author={true}>{authors}</SubTitle>
       <ExtraText>{description || "No description available."}</ExtraText>
-    </>
-  );
-
-  const renderButtons = (onReadPress, onReviewsPress, onListPress) => (
-    <>
-      <StyledButton onPress={onReadPress}>
-        <ButtonText>I've Read This</ButtonText>
-      </StyledButton>
-      <StyledButton onPress={onReviewsPress}>
-        <ButtonText>See Reviews</ButtonText>
-      </StyledButton>
-      <StyledButton onPress={onListPress}>
-        <ButtonText>Add to My Reading List</ButtonText>
-      </StyledButton>
     </>
   );
 
@@ -154,6 +180,23 @@ const BookDetails = ({ route, navigation }) => {
     setMessageType(type);
   };
 
+  const renderButtons = (onReadPress, onReviewsPress, onListPress, onCurrPress) => (
+    <>
+      <StyledButton onPress={onReadPress}>
+        <ButtonText>I've Read This</ButtonText>
+      </StyledButton>
+      <StyledButton onPress={onReviewsPress}>
+        <ButtonText>See Reviews</ButtonText>
+      </StyledButton>
+      <StyledButton onPress={onListPress}>
+        <ButtonText>Add to Reading List</ButtonText>
+      </StyledButton>
+      <StyledButton onPress={onCurrPress}>
+        <ButtonText>Currently Reading</ButtonText>
+      </StyledButton>
+    </>
+  );
+
   const renderGoogleBook = () => {
     const { title, authors, description, imageLinks } = book.volumeInfo;
     return (
@@ -165,7 +208,8 @@ const BookDetails = ({ route, navigation }) => {
           {renderButtons(
             () => navigateToReview('ReviewGoogleBook', book),
             () => navigateToReview('GoogleBookReviews', book),
-            () => addGoogleBookToReadingList(book) //Will need to create Plotline book
+            () => addGoogleBookToReadingList(book), //Will need to create Plotline book
+            () => setModalVisible(true)
           )}
         </InnerContainer>
       </InnerContainer>
@@ -182,7 +226,8 @@ const BookDetails = ({ route, navigation }) => {
         {renderButtons(
           () => navigateToReview('ReviewPlotlineBook', book),
           () => navigateToReview('PlotlineBookReviews', book),
-          () => addBookToReadingList(book._id)
+          () => addBookToReadingList(book._id),
+          () => setModalVisible(true)
         )}
       </InnerContainer>
     );
@@ -197,6 +242,24 @@ const BookDetails = ({ route, navigation }) => {
         {fromReview ? renderPlotLineBook() : renderGoogleBook()}
         <Line />
         <MsgBox type={messageType}>{message}</MsgBox>
+
+        <Modal visible={modalVisible} transparent={true} animationType="slide">
+          <ModalContainer>
+              <ModalInnerContainer>
+                <SubTitle>Select Reading Status</SubTitle>
+                <StatusDropdown onSelect={(value) => setSelectedStatus(value)}/>
+                <FlexRowContainer>
+                  <StyledButton about={true} onPress={() => addBookToCurrentlyReading()}>
+                    <ButtonText>Save</ButtonText>
+                  </StyledButton>
+                  <StyledButton about={true} onPress={() => setModalVisible(false)}>
+                    <ButtonText>Cancel</ButtonText>
+                  </StyledButton>
+                </FlexRowContainer>
+              </ModalInnerContainer>
+          </ModalContainer>
+        </Modal>
+
       </StyledContainer>
     </ScrollView>
   );

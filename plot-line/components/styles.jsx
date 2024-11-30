@@ -1,5 +1,5 @@
 import styled from "styled-components/native";
-import { View, Text, Image, TouchableOpacity, TextInput} from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, Picker} from 'react-native'
 import Constants from 'expo-constants'
 
 const StatusBarHeight = Constants.statusBarHeight;
@@ -328,8 +328,12 @@ export const BookText = styled.Text`
 `;
 
 export const AuthorText = styled.Text`
-        font-size: 14px;
-        color: ${tertiary}
+    font-size: 14px;
+    color: ${tertiary};
+
+    ${(props) => props.italic == true && `
+        font-style: italic;
+    `}
 `
 
 export const ModalContainer = styled.View`
