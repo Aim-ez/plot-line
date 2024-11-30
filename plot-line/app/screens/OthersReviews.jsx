@@ -78,7 +78,7 @@ function OthersReviews({route, navigation}) {
     const numberOfReviews = allReviewData.length;
 
     const goToProfile = () => {
-        navigation.navigate('OthersProfile', {username: handle})
+        navigation.navigate('OthersProfile', {userId: userId, username: handle})
     }
 
 

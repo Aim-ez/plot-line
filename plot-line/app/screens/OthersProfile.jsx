@@ -1,7 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScrollView } from 'react-native';
+import axios from 'axios';
+import { HostURL } from '../../constants/URL.js';
 
 import { CredentialsContext } from '../../components/CredentialsContext.jsx';
 
@@ -14,44 +16,68 @@ import {
     ButtonText,
     Line,
     ExtraText,
+    BookContainer,
+    BookCoverImage,
+    BookInfo,
+    BookText,
+    AuthorText
 } from '../../components/styles';
 
 const Profile = ({ route, navigation }) => {
-    const {username} = route.params;
+    const {userId, username} = route.params;
+    const [favorite, setFavorite] = useState(false);
+    const getFavURL = HostURL + "/user/getFavourite";
+    const getBookURL = HostURL + "/user/getBook";
 
-    // Fetch user data by username
-        const fetchUser = async () => {
-            setMessage(null); // Clear previous messages
+
+    useEffect(() => {
+        fetchFavorite();
+    }, [userId]);
+
+    const fetchFavorite = async () => {
+        try {
+            const response = await axios.get(getFavURL, { params: { userId: userId } });
     
-            if (!query.trim()) {
-                handleMessage('Please enter a username to search.');
-                return;
-            }
+            if (response.data.status === "SUCCESS" && response.data.data) {
+                const favoriteBookId = response.data.data;
     
-            try {
-                const normalizedQuery = query.trim().toLowerCase(); // Normalize the query
-                const response = await axios.get(url, { params: { username: normalizedQuery } });
-                const userId = response.data.data._id;
-    
-                // Navigate to the user reviews page with the fetched user ID and handle
-                navigation.navigate('OthersReviews', { userId, handle: query });
-            } catch (error) {
-                handleMessage(error);
-            }
-        };
+                const bookResponse = await axios.get(getBookURL, { params: { bookId: favoriteBookId } });
+                if (bookResponse.data.status === "SUCCESS") {
+                    setFavorite(bookResponse.data.data); // Store the full book object
+                }
+           }
+        } catch (error) {
+            console.error("Error fetching favorite book:", error);
+        }
+    };
 
     // Render sections to keep JSX clean
     const renderFavourite = () => (
         <InnerContainer>
             <SubTitle>My Favourite Book</SubTitle>
-            <SubTitle profile={true}>Feature coming soon!</SubTitle>
-            <ExtraText>*Insert book similar to reading list*</ExtraText>
+            {renderBook(favorite)}
         </InnerContainer>
     );
+    const renderBook = (book) => {
+        if (!book) {
+            return <ExtraText>@{username} hasn't added a book to this list yet!.</ExtraText>;
+        }
+    
+        return (
+            <BookContainer onPress={() => goToDetails(book)}>
+                <BookCoverImage readlist={true} source={{ uri: book.coverLink }} />
+                <BookInfo>
+                    <BookText>{book.title}</BookText>
+                    <AuthorText>{book.author}</AuthorText>
+                    <ExtraText readlist={true} numberOfLines={2}>{book.description}</ExtraText>
+                </BookInfo>
+            </BookContainer>
+        );
+    };
 
     const renderAboutMe = () => (
         <InnerContainer>
-            <SubTitle>About @{username}</SubTitle>
+            <SubTitle>About Me</SubTitle>
             <SubTitle profile={true}>Feature coming soon!</SubTitle>
             <ExtraText>*Cue about me*</ExtraText>
         </InnerContainer>
@@ -71,9 +97,9 @@ const Profile = ({ route, navigation }) => {
             <StyledContainer>
                 <PageTitle>@{username}'s Profile</PageTitle>
                 <Line thick={true} />
-                {renderFavourite()}
+                 {renderAboutMe()}
                 <Line />
-                {renderAboutMe()}
+                {renderFavourite()}
                 <Line />
                 {renderCurrentlyReading()}
             </StyledContainer>

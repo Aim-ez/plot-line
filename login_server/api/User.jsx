@@ -724,8 +724,14 @@ router.post('/setFavourite', async (req, res) => {
 
 router.get('/getFavourite', async (req, res) => {
     let { userId } = req.query;
+    if (userId === undefined) { //Deals with errors when logging out of profile
+        return res.status(200).json({
+            status: "SUCCESS",
+            data: null,
+          });
+    }
     userId = userId.trim()
-  
+    
     if (!userId) {
       return res.status(400).json({
         status: "FAILED",
@@ -735,7 +741,7 @@ router.get('/getFavourite', async (req, res) => {
   
     try {
       const user = await User.findById(userId).populate('favourite');
-      if (!user.favourite) { //User doesnt' have a favourite
+      if (!user || !user.favourite) { //User doesnt' have a favourite
         return res.status(200).json({
           status: "SUCCESS",
           data: null,
@@ -754,6 +760,42 @@ router.get('/getFavourite', async (req, res) => {
       });
     }
   });
-  
+
+  router.post('/clearFavourite', async (req, res) => {
+    let {userId} = req.body;
+    userId = userId.trim()
+
+    if (!userId) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "UserID is required."
+        })
+    }
+    try {
+        // Check if the user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "User not found.",
+            });
+        }
+
+        // Update the user's favourite book
+        user.favourite = null;
+        await user.save();
+
+        return res.status(200).json({
+            status: "SUCCESS",
+            message: "Favourite book updated successfully.",
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            status: "FAILED",
+            message: "An error occurred while updating the favourite book.",
+        });
+    }
+});
 
 module.exports = router;

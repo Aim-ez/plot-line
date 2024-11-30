@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScrollView } from 'react-native';
 import { HostURL } from '@/constants/URL.js';
 import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { CredentialsContext } from '../../components/CredentialsContext.jsx';
 
@@ -20,8 +22,13 @@ import {
     BookCoverImage,
     BookInfo,
     BookText,
-    AuthorText
+    AuthorText,
+    DeleteIcon,
+    Colors
 } from '../../components/styles';
+const {red} = Colors;
+
+
 
 const Profile = ({ navigation }) => {
     const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
@@ -30,34 +37,43 @@ const Profile = ({ navigation }) => {
     const name = storedCredentials?.name || 'NAME SHOULD BE HERE';
     const username = storedCredentials?.username || 'USER NAME HERE';
     const email = storedCredentials?.email || 'EMAIL HERE';
-    const {_id} = storedCredentials;
+    const {_id} = storedCredentials || '00000';
     const getFavURL = HostURL + "/user/getFavourite";
     const getBookURL = HostURL + "/user/getBook";
+    const clearFavURL = HostURL + "/user/clearFavourite";
+    const nav = useNavigation();
 
 
     const [favorite, setFavorite] = useState(false);
 
+    useEffect(() => {
+        const unsubscribe = nav.addListener('tabPress', () => {
+            fetchFavorite();
+        });
+    
+        return unsubscribe; // Cleanup listener
+      }, [nav]);
 
     useEffect(() => {
-        const fetchFavorite = async () => {
-            try {
-                const response = await axios.get(getFavURL, { params: { userId: _id } });
-    
-                if (response.data.status === "SUCCESS" && response.data.data) {
-                    const favoriteBookId = response.data.data;
-    
-                    const bookResponse = await axios.get(getBookURL, { params: { bookId: favoriteBookId } });
-                    if (bookResponse.data.status === "SUCCESS") {
-                        setFavorite(bookResponse.data.data); // Store the full book object
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching favorite book:", error);
-            }
-        };
-    
         fetchFavorite();
     }, [_id]);
+
+    const fetchFavorite = async () => {
+        try {
+            const response = await axios.get(getFavURL, { params: { userId: _id } });
+    
+            if (response.data.status === "SUCCESS" && response.data.data) {
+                const favoriteBookId = response.data.data;
+    
+                const bookResponse = await axios.get(getBookURL, { params: { bookId: favoriteBookId } });
+                if (bookResponse.data.status === "SUCCESS") {
+                    setFavorite(bookResponse.data.data); // Store the full book object
+                }
+           }
+        } catch (error) {
+            console.error("Error fetching favorite book:", error);
+        }
+    };
 
     // Clear login credentials
     const clearLogin = async () => {
@@ -98,11 +114,27 @@ const Profile = ({ navigation }) => {
         </InnerContainer>
     );
 
+    const removeFavorite = async() => {
+        const dataToSend = {
+            userId: _id,
+          }
+
+        const response = await axios.post(clearFavURL, dataToSend)
+        if (response.data.status === "SUCCESS") {
+            setFavorite(null);
+        } else {
+            console.error("Error deleting book in reading-list.jsx")
+        }
+    }
+
         // Render sections to keep JSX clean
         const renderFavourite = () => (
             <InnerContainer>
                 <SubTitle>Your Favourite Book</SubTitle>
                 {renderBook(favorite)}
+                <DeleteIcon onPress={() => removeFavorite()}>
+                    <Ionicons name="trash" color={red}/>
+                </DeleteIcon>
             </InnerContainer>
         );
     
