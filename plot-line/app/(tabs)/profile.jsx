@@ -112,6 +112,9 @@ const Profile = ({ navigation }) => {
                 console.log(response.data.message); // Log any "no books" message or warnings
             }
         } catch (error) {
+            if (error.response && error.response.status === 404) {
+                return;  // User has never added something to their currently reading list
+            }
             console.error('Error fetching Currently Reading list:', error);
         }
     };
