@@ -6,6 +6,8 @@ const User = require('./../models/User.jsx');
 const ReadingList = require('./../models/ReadingList.jsx');
 const Review = require('./../models/Review.jsx');
 const Book = require('./../models/Book.jsx');
+const CurrentlyReading = require('./../models/CurrentlyReading.jsx');
+
 
 
 // Password handler
@@ -406,10 +408,6 @@ router.get('/reviewExists', async (req, res) => {
 // RETURN null IF BOOK WITH GIVEN DETAILS DOES NOT EXIST
 router.get('/bookExists', async (req, res) => {
     const { title, isbn, author } = req.query;
-
-    console.log(title);
-    console.log(isbn);
-    console.log(author);
     
     //All of these should match a book if it exists in our DB
     //INCLUDING IF ANY OF THEM ARE NULL
@@ -487,6 +485,43 @@ router.get('/getBookData', async (req, res) => {
     }
 });
 
+// backend route to get book object from id
+router.get('/getBook', async (req, res) => {
+    const { bookId } = req.query;
+
+    if (!bookId) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "Book ID is required."
+        });
+    }
+
+    try {
+        // Fetch the book by ID
+        const book = await Book.findById(bookId);
+
+        if (!book) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "Book not found."
+            });
+        }
+
+        // Return book data
+        res.json({
+            status: "SUCCESS",
+            data: book,
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.json({
+            status: "FAILED",
+            message: "An error occurred while fetching book data."
+        });
+    }
+});
+
 // Route to get user ID by username
 router.get('/getUserIdByUsername', async (req, res) => {
     let { username } = req.query; // Get username from query parameters
@@ -522,6 +557,436 @@ router.get('/getUserIdByUsername', async (req, res) => {
             status: "FAILED",
             message: "An error occurred while fetching user data"
         });
+    }
+});
+
+router.get('/getReadingList', async (req, res) => {
+    let { userId } = req.query;
+    userId = userId.trim();
+
+    if (!userId) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "User ID parameter is required"
+        });
+    }
+
+    try {
+        //Find readinglist by userId
+        const data = await ReadingList.findOne({ userId: userId });
+
+        if (!data) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "Reading list not found"
+            });
+        }
+
+        //Return the reading list
+        return res.status(200).json({
+            status: "SUCCESS",
+            data: data
+        })
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: "FAILED",
+            message: "An error occurred while fetching user reading list"
+        });
+    }
+});
+
+router.post('/addToReadingList', async (req, res) => {
+    let { userId, book } = req.body;
+    userId = userId.trim()
+
+    if (!userId || !book) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "Reading list and book are required"
+        })
+    }
+
+    try {
+        const list = await ReadingList.findOne({ userId });
+
+        const isAlreadyInList = list.books.some(
+            (b) => b.isbn === book.isbn
+        );
+
+
+        if (!isAlreadyInList){
+            list.books.push(book);
+            await list.save();
+            return res.status(200).json({
+                status: "SUCCESS",
+                message: "Book added to reading list successfully",
+            });
+        } else {
+            return res.status(200).json({
+                status: "FAILED",
+                message: "This book is already in your reading list!",
+            })
+        }
+    } catch (error) {
+        console.error("Error adding book to raeding list: ", error);
+        return res.status(500).json({ error: 'An error occured' })
+    }
+})
+
+router.post('/removeFromReadingList', async (req, res) => {
+    let { userId, book } = req.body;
+    userId = userId.trim()
+
+    if (!userId || !book) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "Reading list and book are required."
+        })
+    }
+
+    try {
+        const list = await ReadingList.findOne({ userId });
+
+        if (!list) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "Reading list not found."
+            });
+        }
+
+        const bookIndex = list.books.findIndex((b) => b.isbn === book.isbn);
+        if (bookIndex === -1) {
+            return res.status(404).json({ error: "Book not found in reading list"})
+        }
+
+        list.books.splice(bookIndex, 1);
+        await list.save()
+
+        return res.status(200).json({
+            status: "SUCCESS",
+            message: "Book removed from reading list successfully",
+            list,
+        })
+    } catch (error) {
+        console.error("Error removing book from reading list: ", error);
+        return res.status(500).json({error: 'An error occurred'});
+    }
+})
+
+router.post('/setFavourite', async (req, res) => {
+    let {userId, bookId} = req.body;
+    userId = userId.trim()
+    bookId = bookId.trim()
+
+    if (!userId || !bookId) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "UserID and bookID are required."
+        })
+    }
+    try {
+        // Check if the user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "User not found.",
+            });
+        }
+
+        // Check if the book exists
+        const book = await Book.findById(bookId);
+        if (!book) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "Book not found.",
+            });
+        }
+
+        // Update the user's favourite book
+        user.favourite = bookId;
+        await user.save();
+
+        return res.status(200).json({
+            status: "SUCCESS",
+            message: "Favourite book updated successfully.",
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            status: "FAILED",
+            message: "An error occurred while updating the favourite book.",
+        });
+    }
+});
+
+router.get('/getFavourite', async (req, res) => {
+    let { userId } = req.query;
+    if (userId === undefined) { //Deals with errors when logging out of profile
+        return res.status(200).json({
+            status: "SUCCESS",
+            data: null,
+          });
+    }
+    userId = userId.trim()
+    
+    if (!userId) {
+      return res.status(400).json({
+        status: "FAILED",
+        message: "User ID is required.",
+      });
+    }
+  
+    try {
+      const user = await User.findById(userId).populate('favourite');
+      if (!user || !user.favourite) { //User doesnt' have a favourite
+        return res.status(200).json({
+          status: "SUCCESS",
+          data: null,
+        });
+      }
+  
+      return res.status(200).json({
+        status: "SUCCESS",
+        data: user.favourite._id,
+      });
+    } catch (error) {
+      console.error("Error fetching favorite book:", error);
+      return res.status(500).json({
+        status: "FAILED",
+        message: "An error occurred while fetching the favorite book.",
+      });
+    }
+  });
+
+  router.post('/clearFavourite', async (req, res) => {
+    let {userId} = req.body;
+    userId = userId.trim()
+
+    if (!userId) {
+        return res.status(400).json({
+            status: "FAILED",
+            message: "UserID is required."
+        })
+    }
+    try {
+        // Check if the user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                status: "FAILED",
+                message: "User not found.",
+            });
+        }
+
+        // Update the user's favourite book
+        user.favourite = null;
+        await user.save();
+
+        return res.status(200).json({
+            status: "SUCCESS",
+            message: "Favourite book updated successfully.",
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            status: "FAILED",
+            message: "An error occurred while updating the favourite book.",
+        });
+    }
+});
+
+// Fetch 'About Me'
+router.get('/getAboutMe', async (req, res) => {
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ status: "FAILED", message: "UserID is required." });
+    }
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ status: "FAILED", message: "User not found." });
+        }
+
+        return res.status(200).json({ status: "SUCCESS", data: user.about });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: "FAILED", message: "Error fetching 'About Me'." });
+    }
+});
+
+// Update 'About Me'
+router.post('/updateAboutMe', async (req, res) => {
+    const { userId, aboutMe } = req.body;
+
+    if (!userId || aboutMe === undefined) {
+        return res.status(400).json({ status: "FAILED", message: "UserID and AboutMe are required." });
+    }
+
+    if (aboutMe.length > 500) {
+        return res.status(400).json({ status: "FAILED", message: "'About Me' exceeds 500 characters." });
+    }
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ status: "FAILED", message: "User not found." });
+        }
+
+        user.about = aboutMe;
+        await user.save();
+
+        return res.status(200).json({ status: "SUCCESS", message: "'About Me' updated successfully." });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: "FAILED", message: "Error updating 'About Me'." });
+    }
+});
+
+// Route to toggle privacy status
+router.post('/togglePrivacy', async (req, res) => {
+    const { userId } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ status: "FAILED", message: "User not found" });
+        }
+
+        // Toggle privacy status
+        user.private = !user.private;
+        await user.save();
+
+        return res.status(200).json({ status: "SUCCESS", data: user.private });
+    } catch (error) {
+        console.error("Error toggling privacy status:", error);
+        return res.status(500).json({ status: "FAILED", message: "Error toggling privacy status" });
+    }
+});
+
+// Route to get the privacy status of a user
+router.get('/getPrivacyStatus', async (req, res) => {
+    const { userId } = req.query;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ status: "FAILED", message: "User not found" });
+        }
+
+        return res.status(200).json({ status: "SUCCESS", data: user.private });
+    } catch (error) {
+        console.error("Error fetching privacy status:", error);
+        return res.status(500).json({ status: "FAILED", message: "Error fetching privacy status" });
+    }
+});
+
+// Add or update book status in the currently reading list
+router.post('/addCurrentlyReading', async (req, res) => {
+    const { userId, bookId, status } = req.body;
+
+    if (!userId || !bookId || !status) {
+        return res.status(400).json({ status: 'FAILED', message: 'Missing required fields.' });
+    }
+
+    try {
+        let currentlyReading = await CurrentlyReading.findOne({ userId });
+
+        if (!currentlyReading) {
+            // If no currently reading document exists for the user, create one
+            currentlyReading = new CurrentlyReading({ userId, books: [] });
+        }
+
+        // Check if the book is already in the list
+        const existingBook = currentlyReading.books.find(
+            (entry) => entry.book.toString() === bookId
+        );
+
+        if (existingBook) {
+            // Update the status if the book already exists
+            existingBook.status = status;
+        } else {
+            // Add the book to the list
+            currentlyReading.books.push({ book: bookId, status });
+        }
+
+        await currentlyReading.save();
+        res.status(200).json({ status: 'SUCCESS', message: 'Book updated successfully.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: 'FAILED', message: 'Server error.' });
+    }
+});
+
+// Remove a book from the currently reading list
+router.post('/removeCurrentlyReading', async (req, res) => {
+    const { userId, bookId } = req.body;
+
+    if (!userId || !bookId) {
+        return res.status(400).json({ status: 'FAILED', message: 'Missing required fields.' });
+    }
+
+    try {
+        const currentlyReading = await CurrentlyReading.findOne({ userId });
+
+        if (!currentlyReading) {
+            return res.status(404).json({ status: 'FAILED', message: 'No reading list found.' });
+        }
+
+        // Filter out the book
+        currentlyReading.books = currentlyReading.books.filter(
+            (entry) => entry.book.toString() !== bookId
+        );
+
+        await currentlyReading.save();
+        res.status(200).json({ status: 'SUCCESS', message: 'Book removed successfully.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: 'FAILED', message: 'Server error.' });
+    }
+});
+
+// Fetch user's currently reading list
+router.get('/getCurrentlyReading', async (req, res) => {
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ status: 'FAILED', message: 'Missing userId parameter.' });
+    }
+
+    try {
+        const currentlyReading = await CurrentlyReading.findOne({ userId }).populate('books.book');
+
+        if (!currentlyReading || currentlyReading.books.length === 0) {
+            return res.status(404).json({ status: 'SUCCESS', message: 'No books in the currently reading list.', data: { books: [] } });
+        }
+
+        res.status(200).json({
+            status: 'SUCCESS',
+            message: 'Currently reading list retrieved successfully.',
+            data: {
+                books: currentlyReading.books.map((entry) => ({
+                    book: {
+                        _id: entry.book._id,
+                        title: entry.book.title,
+                        author: entry.book.author,
+                        coverLink: entry.book.coverLink,
+                        description: entry.book.description,
+                    },
+                    status: entry.status,
+                })),
+            },
+        });
+    } catch (error) {
+
+        console.error(error);
+        res.status(500).json({ status: 'FAILED', message: 'Server error.' });
     }
 });
 
