@@ -408,3 +408,75 @@ export const DeleteIcon = styled.TouchableOpacity`
 export const FlexRowContainer = styled.View`
         flex-direction: row;
 `
+// New container for the home screen that overrides existing styles
+export const HomeScreenContainer = styled.View`
+  flex: 1;
+  padding-top: ${StatusBarHeight + 10}px;
+  padding-bottom: 0px; /* Prevent extra bottom padding */
+  background-color: ${back};
+  padding-left: 10px;
+  padding-right: 10px;
+`;
+
+// New header style for the home screen
+export const HomeScreenHeader = styled.View`
+  padding: 20px;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+
+// Add a book container that overrides existing margin-bottom to prevent extra space
+export const HomeBookContainer = styled.TouchableOpacity`
+  flex-direction: row;
+  background-color: ${primary};
+  margin-bottom: 0px; /* Ensure no extra bottom margin */
+  padding: 10px;
+  border-radius: 8px;
+  shadow-color: #000;
+  shadow-offset: { width: 0px; height: 1px };
+  shadow-opacity: 0.1;
+  shadow-radius: 3px;
+  elevation: 2;
+`;
+
+// Home book image size for home screen (adjust as needed)
+export const HomeBookCoverImage = styled.Image`
+  width: 100px;
+  height: 150px;
+  resize-mode: contain;
+  margin-right: 10px;
+`;
+
+// Adjust home book info with no extra padding
+export const HomeBookInfo = styled.View`
+  flex: 1;
+  justify-content: center;
+  padding-left: 10px;
+`;
+
+// Home screen title (if needed for home page)
+export const HomePageTitle = styled.Text`
+  font-size: 30px;
+  text-align: center;
+  font-weight: bold;
+  color: ${brand};
+  padding: 10px;
+  margin-bottom: 20px;
+`;
+
+// Button styles for the home screen (if applicable)
+export const HomeButton = styled.TouchableOpacity`
+  padding: 15px;
+  background-color: ${brand};
+  justify-content: center;
+  align-items: center;
+  border-radius: 65px;
+  margin-top: 20px;
+  height: 60px;
+  width: 200px;
+`;
+
+export const HomeButtonText = styled.Text`
+  color: ${primary};
+  font-size: 16px;
+`;
