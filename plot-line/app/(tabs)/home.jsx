@@ -5,6 +5,7 @@ import { HostURL } from '../../constants/URL.ts';
 import { Ionicons } from '@expo/vector-icons';
 
 import { 
+    StyledContainer,
     HomeScreenContainer, 
     HomeScreenHeader, 
     HomeBookContainer, 
@@ -14,7 +15,12 @@ import {
     SearchBar, 
     MsgBox, 
     ButtonText, 
-    StyledButton 
+    StyledButton, 
+    InnerContainer,
+    PageTitle,
+    SubTitle,
+    Line,
+    HeaderImage
 } from '../../components/styles';
 
 const Home = ({ navigation }) => {
@@ -63,7 +69,7 @@ const Home = ({ navigation }) => {
 
     // Fetch user data by username
     const fetchUser = async () => {
-        setMessage(null);
+        setMessage(null); // Clear previous messages
 
         if (!query.trim()) {
             handleMessage('Please enter a username to search.');
@@ -78,7 +84,7 @@ const Home = ({ navigation }) => {
             // Fetch recommendations for the user
             fetchRecommendations(userId);
 
-            // Navigate to the user reviews page
+            // Navigate to the user reviews page with the fetched user ID and handle
             navigation.navigate('OthersReviews', { userId, handle: query });
         } catch (error) {
             handleMessage(error);
@@ -93,40 +99,30 @@ const Home = ({ navigation }) => {
     };
 
     const renderHeader = () => (
-        <HomeScreenHeader>
-            <Text>Recommended Books</Text>
-        </HomeScreenHeader>
+        <InnerContainer>
+            <HeaderImage source={require('../../assets/images/books2.png')} />
+        </InnerContainer>
     );
 
     const renderOtherReviews = () => (
-        <HomeScreenContainer>
-            <HomePageTitle>Need a new read?</HomePageTitle>
+        <InnerContainer>
+            <PageTitle>Need a new read?</PageTitle>
+            <SubTitle>See what others are reviewing:</SubTitle>
             <SearchBar
                 placeholder="Search by username to see others' reviews!"
                 value={query}
                 onChangeText={setQuery}
-                onSubmitEditing={fetchUser}
-                returnKeyType="search"
+                onSubmitEditing={fetchUser} // Trigger fetchUser on "Enter" or "Done"
+                returnKeyType="search" // Customize the keyboard action button
             />
             <MsgBox type={messageType}>{message}</MsgBox>
             <StyledButton onPress={fetchUser}>
                 <ButtonText>See {query ? `${query}'s reviews` : 'reviews'}</ButtonText>
             </StyledButton>
-        </HomeScreenContainer>
+            <Line />
+        </InnerContainer>
     );
 
-    const renderBook = ({ item }) => (
-        <HomeBookContainer>
-            <HomeBookCoverImage source={{ uri: item.coverLink }} />
-            <HomeBookInfo>
-                <Text>{item.title}</Text>
-                <Text>{item.authors.join(', ')}</Text>
-                {/* Truncate the description to fit within the space */}
-                <Text numberOfLines={2} ellipsizeMode="tail">{item.description}</Text>
-            </HomeBookInfo>
-        </HomeBookContainer>
-    );
-    
     const renderRecommendations = () => (
         <HomeScreenContainer>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -149,6 +145,18 @@ const Home = ({ navigation }) => {
         </HomeScreenContainer>
     );
 
+    const renderBook = ({ item }) => (
+        <HomeBookContainer>
+            <HomeBookCoverImage source={{ uri: item.coverLink }} />
+            <HomeBookInfo>
+                <Text>{item.title}</Text>
+                <Text>{item.authors.join(', ')}</Text>
+                {/* Truncate the description to fit within the space */}
+                <Text numberOfLines={2} ellipsizeMode="tail">{item.description}</Text>
+            </HomeBookInfo>
+        </HomeBookContainer>
+    );
+
     const handleRefresh = () => {
         // Clear previously shown titles for a new refresh
         setShownTitles(new Set());
@@ -158,11 +166,11 @@ const Home = ({ navigation }) => {
 
     return (
         <ScrollView>
-            <HomeScreenContainer>
+            <StyledContainer home={true}>
                 {renderHeader()}
                 {renderOtherReviews()}
                 {renderRecommendations()}
-            </HomeScreenContainer>
+            </StyledContainer>
         </ScrollView>
     );
 };
