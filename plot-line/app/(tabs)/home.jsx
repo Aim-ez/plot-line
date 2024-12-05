@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, FlatList, ActivityIndicator, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import axios from 'axios';
 import { HostURL } from '../../constants/URL.ts';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,7 +26,6 @@ import {
 const Home = ({ navigation }) => {
     const url = `${HostURL}/user/getUserIDByUsername`;
 
-    // State for query, messages, and message types
     const [query, setQuery] = useState('');
     const [message, setMessage] = useState(null);
     const [messageType, setMessageType] = useState(null);
@@ -165,13 +164,17 @@ const Home = ({ navigation }) => {
     };
 
     return (
-        <ScrollView>
-            <StyledContainer home={true}>
-                {renderHeader()}
-                {renderOtherReviews()}
-                {renderRecommendations()}
-            </StyledContainer>
-        </ScrollView>
+        <FlatList
+            data={[]}
+            ListHeaderComponent={
+                <StyledContainer home={true}>
+                    {renderHeader()}
+                    {renderOtherReviews()}
+                    {renderRecommendations()}
+                </StyledContainer>
+            }
+            keyExtractor={(item, index) => index.toString()}
+        />
     );
 };
 
