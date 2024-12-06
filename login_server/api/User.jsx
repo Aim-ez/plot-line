@@ -1,5 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
+
+const GOOGLE_BOOKS_API_KEY = 'AIzaSyA4Z1Qm7N2_6AnPLHOtS577y4-nV_NrAb8';
+const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
+
 
 // mongoDB models
 const User = require('./../models/User.jsx');
@@ -7,7 +12,6 @@ const ReadingList = require('./../models/ReadingList.jsx');
 const Review = require('./../models/Review.jsx');
 const Book = require('./../models/Book.jsx');
 const CurrentlyReading = require('./../models/CurrentlyReading.jsx');
-
 
 
 // Password handler
@@ -52,13 +56,15 @@ router.post('/createReview', (req, res) => {
 
 // Posts a book to the DB (NOTE: DOES NOT HAVE DATA CHECKS)
 router.post('/createBook', (req, res) => {
-    let {isbn, title, author, published, description, coverLink} = req.body;
+    let {isbn, title, author, published, description, coverLink, genre} = req.body;
     isbn = isbn;
     title = title.trim();
     author = author.trim();
     published = published.trim();
     description = description.trim();
     coverLink = coverLink.trim();
+
+    genre = genre ? genre.trim() : null;
 
     //Due to google books not having all info, just check that we have 
     //at least one metric to find the book by
@@ -74,7 +80,8 @@ router.post('/createBook', (req, res) => {
             author,
             published,
             description,
-            coverLink
+            coverLink,
+            genre
         });
 
         newBook.save().then(result => {
@@ -121,7 +128,7 @@ router.post('/createManualBook', (req, res) => {
         author,
         published,
         description,
-        coverLink
+        coverLink,
     });
 
     // Save the book to the database
@@ -952,42 +959,140 @@ router.post('/removeCurrentlyReading', async (req, res) => {
     }
 });
 
-// Fetch user's currently reading list
-router.get('/getCurrentlyReading', async (req, res) => {
-    const { userId } = req.query;
+
+router.get('/recommendations', async (req, res) => {
+    const { userId, selectedLanguage, sortOrder, resultsPerPage = 30 } = req.query;
+    
+    console.log("Received request for recommendations:", userId);
 
     if (!userId) {
-        return res.status(400).json({ status: 'FAILED', message: 'Missing userId parameter.' });
+        return res.status(400).json({
+            status: "FAILED",
+            message: "User ID is required.",
+        });
+    }
+
+    const GOOGLE_BOOKS_API_BASE_URL = process.env.GOOGLE_BOOKS_API_BASE_URL;
+    const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
+
+    if (!GOOGLE_BOOKS_API_BASE_URL || !GOOGLE_BOOKS_API_KEY) {
+        console.error("Google Books API configuration is missing.");
+        return res.status(500).json({
+            status: "FAILED",
+            message: "Internal server error. API configuration is missing.",
+        });
     }
 
     try {
-        const currentlyReading = await CurrentlyReading.findOne({ userId }).populate('books.book');
-
-        if (!currentlyReading || currentlyReading.books.length === 0) {
-            return res.status(404).json({ status: 'SUCCESS', message: 'No books in the currently reading list.', data: { books: [] } });
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(400).json({
+                status: "FAILED",
+                message: "User not found.",
+            });
         }
 
-        res.status(200).json({
-            status: 'SUCCESS',
-            message: 'Currently reading list retrieved successfully.',
-            data: {
-                books: currentlyReading.books.map((entry) => ({
-                    book: {
-                        _id: entry.book._id,
-                        title: entry.book.title,
-                        author: entry.book.author,
-                        coverLink: entry.book.coverLink,
-                        description: entry.book.description,
-                    },
-                    status: entry.status,
-                })),
-            },
+        const readingList = await ReadingList.findOne({ userId }).populate('books');
+        const reviews = await Review.find({ userId });
+
+        const preferences = {
+            authors: {},
+            titles: {},
+            genres: {}
+        };
+
+        const addPreference = (category, item, weight) => {
+            if (!item) return;
+            preferences[category][item] = (preferences[category][item] || 0) + weight;
+        };
+
+        // Collect weighted preferences (Removed favorite book influence)
+        if (readingList?.books) {
+            readingList.books.forEach((book) => {
+                addPreference('titles', book.title, 3);
+                addPreference('authors', book.author, 3);
+                addPreference('genres', book.genre, 3);
+            });
+        }
+
+        if (reviews.length > 0) {
+            reviews.forEach((review) => {
+                const weight = review.rating || 1;  // If no rating, default to 1
+                addPreference('titles', review.bookTitle, weight);  // Influence titles with review weight
+                addPreference('authors', review.bookAuthor, weight);  // Influence authors with review weight
+                addPreference('genres', review.bookGenre, weight);  // Influence genres with review weight
+            });
+        }
+
+        // Sort preferences by weight
+        const sortedAuthors = Object.entries(preferences.authors).sort((a, b) => b[1] - a[1]);
+        const sortedGenres = Object.entries(preferences.genres).sort((a, b) => b[1] - a[1]);
+
+        const mostFrequentAuthor = sortedAuthors[0]?.[0] || null;
+        const mostFrequentGenre = sortedGenres[0]?.[0] || null;
+
+        // Fetch books
+        const authorQuery = mostFrequentAuthor ? `inauthor:${mostFrequentAuthor}` : '';
+        const genreQuery = mostFrequentGenre ? `subject:${mostFrequentGenre}` : '';
+
+        // Fetch books using Google Books API
+        const fetchBooks = async (query, startIndex = 0) => {
+            if (!query) return [];
+            const encodedQuery = encodeURIComponent(query);
+            const url = `${GOOGLE_BOOKS_API_BASE_URL}?q=${encodedQuery}&key=${GOOGLE_BOOKS_API_KEY}&maxResults=30&startIndex=${startIndex}`;
+            const response = await axios.get(url);
+            return response.data.items || [];
+        };
+
+        // Fetch books for both author and genre with an offset for the genre
+        const [authorBooks, genreBooks, randomBooks] = await Promise.all([
+            fetchBooks(authorQuery),
+            fetchBooks(genreQuery, 30),  // Offset genre books by 30 to reduce overlap
+            fetchBooks("subject:fiction") // Add random genre books for variety (you can change this)
+        ]);
+
+        // Combine results and deduplicate using book ID
+        const bookSet = new Map();
+        [...authorBooks, ...genreBooks, ...randomBooks].forEach((item) => {
+            const bookId = item.id || item.volumeInfo?.title; // Use ID if available, fallback to title
+            if (bookId && !bookSet.has(bookId)) {
+                bookSet.set(bookId, item);
+            }
+        });
+
+        // Sort books based on the weight of preferences
+        const sortedRecommendations = Array.from(bookSet.values()).map((item) => ({
+            id: item.id,
+            title: item.volumeInfo?.title || "Untitled",
+            authors: item.volumeInfo?.authors || ["Unknown Author"],
+            genre: item.volumeInfo?.categories?.[0] || "Unknown Genre",
+            description: item.volumeInfo?.description || "No description available.",
+            coverLink: item.volumeInfo?.imageLinks?.thumbnail || "default_cover_url",
+            weight: (preferences.titles[item.volumeInfo?.title] || 0) +
+                (item.volumeInfo?.authors?.some((author) => preferences.authors[author]) ? 1 : 0) +
+                (preferences.genres[item.volumeInfo?.categories?.[0]] || 0)
+        }));
+
+        // Sort recommendations by weight first, then introduce randomness
+        const sortedAndRandomized = sortedRecommendations.sort((a, b) => b.weight - a.weight).slice(0, resultsPerPage);
+
+        // Introduce a shuffle to increase variety (randomize the order)
+        const shuffledRecommendations = sortedAndRandomized.sort(() => Math.random() - 0.5);
+
+        // Send the response
+        return res.status(200).json({
+            status: "SUCCESS",
+            data: shuffledRecommendations,
         });
     } catch (error) {
-
-        console.error(error);
-        res.status(500).json({ status: 'FAILED', message: 'Server error.' });
+        console.error("Error fetching recommendations:", error.message);
+        return res.status(500).json({
+            status: "FAILED",
+            message: "An error occurred while fetching recommendations.",
+        });
     }
 });
+
+
 
 module.exports = router;
