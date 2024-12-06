@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext  } from 'react';
 import { FlatList, Text, ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import axios from 'axios';
+import { CredentialsContext } from '../../components/CredentialsContext';
 import { HostURL } from '../../constants/URL.ts';
 import { Ionicons } from '@expo/vector-icons';
 
 import { 
     StyledContainer,
     HomeScreenContainer, 
-    HomeScreenHeader, 
     HomeBookContainer, 
     HomeBookCoverImage, 
     HomeBookInfo, 
@@ -20,6 +20,7 @@ import {
     PageTitle,
     SubTitle,
     Line,
+    ExtraText,
     HeaderImage
 } from '../../components/styles';
 
@@ -32,39 +33,56 @@ const Home = ({ navigation }) => {
     const [recommendations, setRecommendations] = useState([]);
     const [loading, setLoading] = useState(false);
     const [shownTitles, setShownTitles] = useState(new Set()); // Track previously shown titles
+    const [reviewCount, setReviewCount] = useState(0);
+
+    const { storedCredentials } = useContext(CredentialsContext);
+    const { _id } = storedCredentials;
+
+    const reviewsUrl = `${HostURL}/user/getReviews`;
+    const recommendationsUrl = `${HostURL}/user/recommendations`;
 
     // Fetch recommendations from backend
-    const fetchRecommendations = async (userId) => {
-        if (!userId) {
-            console.log("No userId provided for recommendations.");
-            return;
+    const fetchReviewCount = async () => {
+        try {
+            const response = await axios.get(reviewsUrl, { params: { userId: _id } });
+            setReviewCount(response.data.data.length || 0);
+        } catch (error) {
+            console.error('Error fetching review count:', error);
         }
+    };
+
+    const fetchRecommendations = async () => {
+        if (reviewCount < 3) return; // Ensure the user has at least 3 reviews
 
         setLoading(true);
         try {
-            const response = await axios.get(`${HostURL}/user/recommendations`, { params: { userId } });
-            // Filter out books that have already been shown based on titles
+            const response = await axios.get(recommendationsUrl, { params: { userId: _id } });
             const newRecommendations = response.data.data.filter(book => !shownTitles.has(book.title));
 
             if (newRecommendations.length > 0) {
-                // Limit to 3 books
                 const limitedRecommendations = newRecommendations.slice(0, 3);
-
-                // Update shownTitles to track the titles of the displayed books
                 limitedRecommendations.forEach(book => shownTitles.add(book.title));
-
-                // Update recommendations with new limited books
                 setRecommendations(limitedRecommendations);
             } else {
                 console.log('No new unique recommendations.');
             }
         } catch (error) {
             console.error('Error fetching recommendations:', error);
-            handleMessage(error);
         } finally {
             setLoading(false);
         }
     };
+
+    // Automatically load recommendations if the user has at least 3 reviews
+    useEffect(() => {
+        fetchReviewCount();
+    }, []);
+
+    useEffect(() => {
+        if (reviewCount >= 3) {
+            fetchRecommendations();
+        }
+    }, [reviewCount]);
 
     // Fetch user data by username
     const fetchUser = async () => {
@@ -170,7 +188,11 @@ const Home = ({ navigation }) => {
                 <StyledContainer home={true}>
                     {renderHeader()}
                     {renderOtherReviews()}
-                    {renderRecommendations()}
+                    {reviewCount < 3 ? (
+                        <ExtraText>Write at least 3 reviews to get recommendations!</ExtraText>
+                    ) : (
+                        renderRecommendations()
+                    )}
                 </StyledContainer>
             }
             keyExtractor={(item, index) => index.toString()}
