@@ -480,3 +480,17 @@ export const HomeButtonText = styled.Text`
   color: ${primary};
   font-size: 16px;
 `;
+
+const RefreshButton = styled.TouchableOpacity`
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: #007BFF; /* Primary color */
+    align-items: center;
+    justify-content: center;
+    shadow-color: #000;
+    shadow-offset: { width: 0, height: 2 };
+    shadow-opacity: 0.25;
+    shadow-radius: 3.84px;
+    elevation: 5;
+`;
