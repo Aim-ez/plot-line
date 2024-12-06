@@ -1,7 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, FlatList, View, Modal, Button} from 'react-native';
+import { StyleSheet, FlatList, View, Modal, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import useFetchBooks from '../../hooks/useFetchBooks';  // Import the custom hook
+
 import {
   StyledContainer,
   InnerContainer,
@@ -22,63 +25,41 @@ import {
   FilterText,
 } from '../../components/styles';
 
-const GOOGLE_BOOKS_API_KEY = 'AIzaSyA4Z1Qm7N2_6AnPLHOtS577y4-nV_NrAb8';
-const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
-
 const Search = ({ navigation }) => {
   const [query, setQuery] = useState('');
-  const [books, setBooks] = useState([]);
-  const [resultsPerPage] = useState(35); // Set results per page to 35
-  const [modalVisible, setModalVisible] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [sortOrder, setSortOrder] = useState('');
-  const [hasSearched, setHasSearched] = useState(false);
-  const [totalResults, setTotalResults] = useState(0); // Add this line
+  const [modalVisible, setModalVisible] = useState(false);
+  const [resultsPerPage] = useState(35); // Set results per page to 35
 
+  const { books, totalResults, hasSearched, fetchBooks } = useFetchBooks(
+    query, selectedGenre, selectedLanguage, resultsPerPage, sortOrder
+  );
 
   const nav = useNavigation();
 
   useEffect(() => {
+    // Reset filters and trigger fetchBooks when tab is pressed
     const unsubscribe = nav.addListener('tabPress', () => {
-      // Reset all state when the tab is pressed
       setQuery('');
-      setBooks([]);
       setSelectedGenre('');
       setSelectedLanguage('');
       setSortOrder('');
-      setHasSearched(false);
+      if (query.trim()) { // Only trigger fetchBooks if the query is non-empty
+        fetchBooks(); // EDIT: Added check for non-empty query
+      }
     });
 
     return unsubscribe; // Cleanup listener
   }, [nav]);
 
-  const fetchBooks = async () => {
-    try {
-      const genreQuery = selectedGenre ? `+subject:${selectedGenre}` : '';
-      const languageQuery = selectedLanguage ? `&langRestrict=${selectedLanguage}` : '';
-      const url = `${GOOGLE_BOOKS_API}?q=${query}${genreQuery}${languageQuery}&key=${GOOGLE_BOOKS_API_KEY}&maxResults=${resultsPerPage}`;
-
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Network response was not ok');
-
-      const data = await response.json();
-      let fetchedBooks = data.items || [];
-
-      setBooks(fetchedBooks);
-      setTotalResults(data.totalItems || 0);
-      setHasSearched(true);
-
-      // Apply sorting
-      if (sortOrder === 'A-Z') {
-        fetchedBooks.sort((a, b) => a.volumeInfo.title.localeCompare(b.volumeInfo.title));
-      } else if (sortOrder === 'Z-A') {
-        fetchedBooks.sort((a, b) => b.volumeInfo.title.localeCompare(a.volumeInfo.title));
-      }
-    } catch (error) {
-      console.error('Error fetching books:', error);
+  useEffect(() => {
+    // Trigger fetchBooks whenever filters change
+    if (query.trim()) { // EDIT: Added check for non-empty query
+      fetchBooks();
     }
-  };
+  }, [selectedGenre, selectedLanguage, sortOrder]);
 
   const clearFilters = () => {
     setSelectedGenre('');
@@ -86,7 +67,11 @@ const Search = ({ navigation }) => {
     setSortOrder('');
   };
 
-  const handleSearch = () => fetchBooks(); // Trigger fetchBooks when search is submitted
+  const handleSearch = () => {
+    if (query.trim()) { // Only trigger fetchBooks if the query is non-empty
+      fetchBooks(); // EDIT: Added check for non-empty query
+    }
+  } // Trigger fetchBooks when search is submitted
 
   const renderBookItem = ({ item }) => (
     <ReviewBox onPress={() => navigation.navigate('BookDetails', { book: item, fromReview: false })}>
@@ -96,6 +81,12 @@ const Search = ({ navigation }) => {
   );
 
   const genres = ['Fiction', 'Non-Fiction', 'Poetry', 'Fantasy'];
+
+  const applyFilters = () => {
+    // Apply filters and close modal
+    setModalVisible(false);
+    // No need to explicitly call fetchBooks as it's handled in the useEffect
+  };
 
   return (
     <StyledContainer>
@@ -121,19 +112,17 @@ const Search = ({ navigation }) => {
         </RightIcon>
 
         <InnerContainer>
-          <>
-            <FlatList
-              data={books}
-              keyExtractor={(item) => item.id}
-              renderItem={renderBookItem}
-              style={styles.results}
-            />
-            {hasSearched && (
-              <StyledButton onPress={() => navigation.navigate('addManualBook')}>
-                <ButtonText>Can't Find What You're Looking For?</ButtonText>
-              </StyledButton>
-            )}
-          </>
+          <FlatList
+            data={books}
+            keyExtractor={(item, index) => `${item.id}-${index}`} // Ensures unique keys
+            renderItem={renderBookItem}
+            style={styles.results}
+          />
+          {hasSearched && (
+            <StyledButton onPress={() => navigation.navigate('addManualBook')}>
+              <ButtonText>Can't Find What You're Looking For?</ButtonText>
+            </StyledButton>
+          )}
         </InnerContainer>
       </InnerContainer>
 
@@ -151,9 +140,9 @@ const Search = ({ navigation }) => {
             {/* Genre Selection */}
             <SectionTitle>Genre</SectionTitle>
             <FlatList
-              key={modalVisible ? 'open' : 'closed'}  // Force re-render on modal visibility change
+              key={modalVisible ? 'open' : 'closed'}
               data={genres}
-              keyExtractor={(item, index) => index.toString()}
+              keyExtractor={(item) => `genre-${item}`} // Unique keys for genres
               renderItem={({ item: genre }) => (
                 <FilterOption
                   onPress={() => setSelectedGenre(genre)}
@@ -201,26 +190,19 @@ const Search = ({ navigation }) => {
 
             {/* Modal Buttons */}
             <View style={styles.modalButtons}>
-              <Button 
-                title="Apply Filters" 
-                onPress={() => {
-                  setModalVisible(false); // Close the modal
-                  fetchBooks();           // Fetch books with the applied filters
-                }} 
+              <Button
+                title="Apply Filters"
+                onPress={applyFilters} // Apply filters and close modal
               />
-              <Button 
-                title="Clear Filters" 
-                onPress={() => {
-                  clearFilters();         // Clear filters
-                  fetchBooks();           // Re-fetch books without filters
-                  setModalVisible(false); // Close the modal
-                }} 
-                color="orange" 
+              <Button
+                title="Clear Filters"
+                onPress={clearFilters} // Clear filters and fetch books
+                color="orange"
               />
-              <Button 
-                title="Close" 
+              <Button
+                title="Close"
                 onPress={() => setModalVisible(false)} // Just close the modal
-                color="grey" 
+                color="grey"
               />
             </View>
           </ModalInnerContainer>
@@ -231,101 +213,27 @@ const Search = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
- 
   container: {
     flex: 1,
     padding: 20,
   },
-  filterButton: {
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 20,
-    width: '100%',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    textAlign: 'center',
-  },
   results: {
     width: '100%',
   },
-  bookItem: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  bookTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  bookAuthor: {
-    fontSize: 14,
-    color: '#666',
-  },
-  filterButton: {
-    marginVertical: 10,
-    padding: 10,
-    backgroundColor: '#007bff',
-    borderRadius: 5,
-  },
-  searchButton: {
-    marginVertical: 10,
-    padding: 10,
-    backgroundColor: '#28a745',
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: '#fff',
-    textAlign: 'center',
-  },
-  results: {
-    marginTop: 20,
-    width: '90%',
-  },
-  modalContent: {
-    width: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 15,
+  genreList: {
+    maxHeight: 150,
+    paddingBottom: 10,
   },
   selectionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
   },
-  optionButton: {
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  selectedOption: {
-    backgroundColor: '#007bff',
-  },
-  optionText: {
-    textAlign: 'center',
-    color: '#000',
-  },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
   },
-  genreList: {
-    maxHeight: 150,
-    paddingBottom: 10,
-  },
 });
+
 export default Search;
